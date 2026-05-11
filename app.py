@@ -28,7 +28,7 @@ if not DOMAINS:
 
 # PostgreSQL connection pool
 db_pool = psycopg2.pool.SimpleConnectionPool(
-    1, 20, os.environ['DATABASE_URL'] + '?sslmode=require'
+    1, 20, os.environ['DATABASE_URL']
 )
 
 def get_db_connection():
