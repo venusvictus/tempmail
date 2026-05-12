@@ -2,6 +2,7 @@ import os
 import random
 import time
 import uuid
+import json
 
 from flask import Flask, request, jsonify, session, render_template
 from flask_limiter import Limiter
@@ -139,7 +140,6 @@ def get_messages(to_addr, limit=200):
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # 🔧 FIX: include is_read column so the frontend can show unread dot
     cur.execute(
         """
         SELECT id, from_addr, subject, received_at, is_read
@@ -162,7 +162,7 @@ def get_messages(to_addr, limit=200):
             "from": r[1],
             "subject": r[2],
             "timestamp": r[3],
-            "read": r[4]               # add read status
+            "read": r[4]
         }
         for r in rows
     ]
@@ -192,7 +192,7 @@ def get_single_message(msg_id):
     return {
         "from": row[0],
         "subject": row[1],
-        "body": row[2],
+        "body": row[2],          # this contains the actual email content now
         "date": row[3]
     }
 
@@ -227,7 +227,7 @@ def delete_all_messages(to_addr):
     put_db_connection(conn)
 
 # ---------------------------------------------------
-# Webhook endpoint
+# Webhook endpoint – IMPROVED BODY EXTRACTION
 # ---------------------------------------------------
 
 
@@ -242,7 +242,22 @@ def webhook():
     from_addr = data.get("from", "").strip()
     subject = data.get("subject", "").strip()
 
-    body = data.get("text", "") or data.get("html", "")
+    # Try to extract the email body from any common key
+    body = (
+        data.get("text") or
+        data.get("html") or
+        data.get("plain") or
+        data.get("body") or
+        data.get("content") or
+        data.get("raw") or
+        data.get("message") or
+        ""
+    ).strip()
+
+    # If still empty, store the entire JSON payload as fallback (useful for debugging)
+    if not body:
+        # Avoid exposing sensitive data; you can remove this later
+        body = json.dumps(data, indent=2)
 
     if to_addr and from_addr:
         try:
