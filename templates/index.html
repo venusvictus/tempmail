@@ -3,121 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>TempMail · Disposable Email Service</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>TempMail · Professional Disposable Email</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface2: #f1f5f9;
+            --text: #0f172a;
+            --text2: #475569;
+            --border: #e2e8f0;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --patreon: #f96854;
+            --patreon-hover: #e85d4a;
+            --success: #10b981;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05);
+            --radius: 20px;
+            --radius-sm: 12px;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .dark {
+            --bg: #0b1120;
+            --surface: #1e293b;
+            --surface2: #334155;
+            --text: #f1f5f9;
+            --text2: #94a3b8;
+            --border: #334155;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -2px rgba(0,0,0,0.2);
+            --patreon: #f96854;
+            --patreon-hover: #e85d4a;
+            --success: #34d399;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #f5f7fb;
-            color: #1a2c3e;
-            line-height: 1.4;
-            padding: 20px 16px 48px;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding: 24px 16px 60px;
+            transition: background var(--transition), color var(--transition);
         }
-        .container {
-            max-width: 860px;
-            margin: 0 auto;
-        }
-        .card {
-            background: #ffffff;
-            border-radius: 28px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02), 0 2px 6px rgba(0, 0, 0, 0.03);
-            padding: 20px 24px;
-            margin-bottom: 24px;
-            border: 1px solid #eef2f6;
-        }
-        .card-header {
+        .container { max-width: 880px; margin: 0 auto; }
+        .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 18px;
+            margin-bottom: 24px;
         }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary);
+        }
+        .theme-toggle {
+            background: var(--surface2);
+            border: none;
+            color: var(--text);
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background var(--transition);
+        }
+        .theme-toggle:hover { background: var(--border); }
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            transition: box-shadow var(--transition), border var(--transition);
+        }
+        .card:hover { box-shadow: var(--shadow-lg); }
         .badge-auto {
-            background: #eef2ff;
-            color: #1f4f9e;
+            background: #dbeafe;
+            color: #1e40af;
             border-radius: 100px;
-            padding: 6px 12px;
+            padding: 6px 14px;
             font-size: 0.75rem;
             font-weight: 500;
             display: inline-flex;
             align-items: center;
             gap: 6px;
         }
-        .address-group {
-            background: #f8fafd;
-            border-radius: 20px;
-            padding: 6px;
+        .address-row {
             display: flex;
-            flex-wrap: wrap;
+            gap: 12px;
             align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0 16px;
         }
-        .email-address {
-            font-family: 'SF Mono', 'Fira Code', monospace;
+        .email-display {
+            flex: 1;
+            background: var(--surface2);
+            border-radius: 60px;
+            padding: 12px 20px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
             font-size: 0.95rem;
             font-weight: 500;
-            background: white;
-            padding: 10px 16px;
-            border-radius: 40px;
-            flex: 1;
+            border: 1px solid var(--border);
             word-break: break-all;
-            border: 1px solid #e2e8f0;
+            transition: background var(--transition);
         }
-        .copy-btn, .btn-primary, .btn-outline {
-            border-radius: 40px;
-            padding: 10px 20px;
+        .btn {
+            border-radius: 60px;
+            padding: 12px 22px;
             font-weight: 600;
             font-size: 0.85rem;
             display: inline-flex;
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            transition: all 0.2s;
             border: none;
+            transition: all var(--transition);
+            white-space: nowrap;
+            outline: none;
         }
-        .copy-btn {
-            background: white;
-            border: 1px solid #dce3ec;
-            color: #2c5a9e;
+        .btn:focus-visible {
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.5);
         }
-        .copy-btn:hover { background: #f0f4fa; }
-        .btn-primary {
-            background: #1f6392;
-            color: white;
+        .btn:active {
+            transform: scale(0.97);
         }
-        .btn-primary:hover { background: #0f4b70; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
         .btn-outline {
             background: transparent;
-            border: 1px solid #cddae9;
-            color: #3a5c7c;
+            border: 1px solid var(--border);
+            color: var(--text);
         }
-        .btn-outline:hover { background: #f0f4fa; border-color: #abc0dc; }
-        .btn-danger-outline {
-            border-color: #ffe2dd;
-            color: #bc5c4c;
-        }
-        .btn-danger-outline:hover { background: #fff2ef; }
-        .action-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 6px;
-        }
+        .btn-outline:hover { background: var(--surface2); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: var(--danger-hover); }
         .inbox-header {
             display: flex;
             justify-content: space-between;
-            align-items: baseline;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
+            align-items: center;
+            margin-bottom: 20px;
         }
         .inbox-title {
             font-weight: 700;
@@ -126,185 +163,333 @@
             align-items: center;
             gap: 10px;
         }
-        .new-badge {
-            background: #e53e3e;
+        .unread-badge {
+            background: var(--danger);
             color: white;
             font-size: 0.7rem;
             font-weight: 600;
-            padding: 2px 8px;
+            padding: 2px 10px;
             border-radius: 30px;
+            display: none;
         }
         .refresh-info {
             font-size: 0.75rem;
-            color: #6c86a3;
-            background: #f1f4f9;
-            padding: 5px 12px;
-            border-radius: 40px;
-        }
-        .email-list {
+            color: var(--text2);
             display: flex;
-            flex-direction: column;
+            align-items: center;
             gap: 8px;
         }
+        .email-list { display: flex; flex-direction: column; gap: 8px; }
         .email-item {
-            background: #ffffff;
-            border: 1px solid #eef2f8;
-            border-radius: 20px;
-            padding: 14px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
+            gap: 14px;
             cursor: pointer;
+            transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+            user-select: none;
+            outline: none;
         }
-        .email-item:hover { background: #fefefe; border-color: #cbddee; }
-        .email-content { flex: 3; min-width: 160px; }
-        .email-sender {
-            font-weight: 700;
-            font-size: 0.9rem;
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .email-item[role="button"]:focus-visible {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+        }
+        .email-item:hover:not(.skeleton) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+        }
+        .email-item:active:not(.skeleton) {
+            transform: scale(0.99);
         }
         .unread-dot {
-            width: 8px;
-            height: 8px;
-            background: #2b6e9f;
+            width: 10px; height: 10px;
+            background: var(--primary);
             border-radius: 50%;
-            display: inline-block;
+            flex-shrink: 0;
+        }
+        .email-content { flex: 1; min-width: 0; }
+        .email-sender {
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .email-subject {
             font-size: 0.85rem;
-            color: #2c3f55;
-            font-weight: 500;
+            color: var(--text2);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .email-meta {
             font-size: 0.7rem;
-            color: #7a8faa;
+            color: var(--text2);
             margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
-        .email-actions { display: flex; gap: 12px; }
+        .email-actions {
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+        .email-item:hover .email-actions,
+        .email-item:focus-within .email-actions { opacity: 1; }
         .icon-btn {
-            background: none;
+            background: transparent;
             border: none;
-            font-size: 1rem;
-            color: #8aa0bc;
+            font-size: 1.1rem;
+            color: var(--text2);
             cursor: pointer;
             padding: 6px;
-            border-radius: 40px;
+            border-radius: 50%;
+            transition: color var(--transition), background var(--transition);
+            outline: none;
         }
-        .icon-btn:hover { color: #cf5a48; background: #fff1ee; }
+        .icon-btn:hover { color: var(--danger); background: #fee2e2; }
+        .icon-btn:focus-visible {
+            box-shadow: 0 0 0 2px var(--primary);
+        }
         .empty-state {
             text-align: center;
-            padding: 48px 20px;
-            color: #8aa3bf;
+            padding: 60px 20px;
+            color: var(--text2);
         }
+        .empty-state svg { width: 80px; height: 80px; opacity: 0.7; margin-bottom: 16px; }
         .support-card {
-            background: #fffaf2;
-            border: 1px solid #ffe6c7;
-            border-radius: 24px;
-            padding: 16px 20px;
-            margin-top: 16px;
+            background: linear-gradient(135deg, #fef3c7, #fef9c3);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-top: 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 16px;
+            border: 1px solid #fde68a;
         }
-        .ko-fi-btn {
-            background: #ff5e5e;
+        .support-card .text {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #92400e;
+        }
+        .patreon-btn {
+            background: var(--patreon);
             color: white;
-            border-radius: 48px;
-            padding: 8px 20px;
+            border-radius: 60px;
+            padding: 10px 24px;
             font-weight: 600;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            transition: background var(--transition);
         }
-        .ko-fi-btn:hover { background: #e04545; }
-        .modal {
+        .patreon-btn:hover { background: var(--patreon-hover); }
+        /* MODAL */
+        .modal-overlay {
             display: none;
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top:0; left:0; width:100%; height:100%;
             background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(6px);
             align-items: center;
             justify-content: center;
-            z-index: 1000;
-            padding: 16px;
+            z-index:1000;
+            padding:16px;
+            animation: fadeIn 0.2s ease;
         }
         .modal-card {
-            background: white;
-            max-width: 680px;
-            width: 100%;
-            border-radius: 32px;
-            max-height: 85vh;
+            background: var(--surface);
+            max-width:700px;
+            width:100%;
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            max-height: 85vh;
+            animation: slideUp 0.2s ease;
+            outline: none;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; } to { opacity: 1; }
         }
         .modal-header, .modal-footer {
             padding: 18px 24px;
-            border-bottom: 1px solid #ecf3f9;
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .modal-footer {
-            border-top: 1px solid #ecf3f9;
-            border-bottom: none;
-            justify-content: flex-end;
-            gap: 12px;
-        }
+        .modal-footer { border-top: 1px solid var(--border); border-bottom: none; justify-content: flex-end; gap:12px; }
         .modal-body {
             padding: 24px;
             overflow-y: auto;
-            flex: 1;
+            flex:1;
         }
-        .toast-msg {
+        .modal-body .meta {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text2);
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+        }
+        .email-body-container {
+            background: var(--surface2);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            font-family: 'Inter', sans-serif;
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.6;
+            max-height: 50vh;
+            overflow: auto;
+        }
+        .iframe-viewer {
+            width: 100%;
+            border: none;
+            border-radius: var(--radius-sm);
+            min-height: 300px;
+            background: white;
+        }
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: var(--text2);
+            cursor: pointer;
+            padding: 0 4px;
+            line-height: 1;
+        }
+        /* CONFIRMATION DIALOG */
+        .confirm-dialog {
             position: fixed;
-            bottom: 24px;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 16px;
+        }
+        .confirm-box {
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+        .confirm-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        /* SKELETON LOADER */
+        .skeleton {
+            display: flex;
+            gap: 14px;
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            align-items: center;
+        }
+        .skeleton-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+            flex-shrink: 0;
+        }
+        .skeleton-line {
+            height: 10px;
+            background: var(--border);
+            border-radius: 6px;
+            animation: shimmer 1.5s infinite;
+        }
+        .skeleton-line.short { width: 40%; }
+        .skeleton-line.medium { width: 70%; }
+        .skeleton-line.long { width: 90%; }
+        @keyframes shimmer {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            background: #1e2f3e;
+            background: #1e293b;
             color: white;
-            padding: 10px 22px;
+            padding: 12px 28px;
             border-radius: 60px;
             font-size: 0.85rem;
             opacity: 0;
-            transition: opacity 0.2s;
+            transition: opacity 0.3s;
+            z-index: 2000;
             pointer-events: none;
-            z-index: 1100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        @media (max-width: 560px) {
-            .card { padding: 16px; }
+        .toast.show { opacity: 1; pointer-events: auto; }
+        .toast .undo-btn {
+            background: transparent;
+            border: 1px solid white;
+            color: white;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        @media (max-width: 600px) {
             .email-item { flex-direction: column; align-items: flex-start; }
-            .email-actions { align-self: flex-end; }
-            .support-card { flex-direction: column; text-align: center; }
+            .email-actions { align-self: flex-end; opacity:1; }
+            .address-row { flex-direction: column; }
+            .btn { width: 100%; justify-content: center; }
         }
     </style>
 </head>
 <body>
 <div class="container">
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-envelope-open-text" style="color: var(--primary);"></i>
+            TempMail
+        </div>
+        <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode" aria-label="Toggle dark mode">
+            <i class="fas fa-moon"></i>
+        </button>
+    </div>
+
     <div class="card">
-        <div class="card-header">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-envelope-open-text" style="color: #1f6392; font-size: 1.6rem;"></i>
-                <h2 style="font-weight: 700;">TempMail</h2>
-            </div>
-            <div class="badge-auto"><i class="fas fa-sync-alt"></i> Auto‑refresh 10s</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div class="badge-auto"><i class="fas fa-sync-alt fa-spin"></i> Auto‑refresh 10s</div>
         </div>
-        <div class="address-group">
-            <div class="email-address" id="currentEmail">—</div>
-            <button class="copy-btn" id="copyAddressBtn"><i class="far fa-copy"></i> Copy</button>
+        <div class="address-row">
+            <div class="email-display" id="currentEmail">—</div>
+            <button class="btn btn-outline" id="copyAddressBtn"><i class="far fa-copy"></i> Copy</button>
         </div>
-        <div class="action-buttons">
-            <button class="btn-primary" id="newAddressBtn"><i class="fas fa-plus-circle"></i> New address</button>
-            <button class="btn-outline btn-danger-outline" id="deleteAllBtn"><i class="far fa-trash-alt"></i> Delete all</button>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-primary" id="newAddressBtn"><i class="fas fa-plus-circle"></i> New Address</button>
+            <button class="btn btn-danger" id="deleteAllBtn" style="background:#ef4444; color:white;"><i class="far fa-trash-alt"></i> Delete All</button>
         </div>
     </div>
 
@@ -312,39 +497,90 @@
         <div class="inbox-header">
             <div class="inbox-title">
                 <i class="fas fa-inbox"></i> Inbox
-                <span id="unreadCountBadge" class="new-badge" style="display: none;">0</span>
+                <span id="unreadCountBadge" class="unread-badge">0</span>
             </div>
             <div class="refresh-info">
-                <i class="fas fa-hourglass-half"></i> Next check: <span id="countdownSec">10</span>s
-                <button id="manualRefreshBtn" style="background: none; border: none; margin-left: 8px; color:#1f6392; cursor: pointer;"><i class="fas fa-rotate-right"></i></button>
+                <i class="fas fa-hourglass-half"></i> <span id="countdownSec">10</span>s
+                <button id="manualRefreshBtn" class="icon-btn" title="Refresh now" aria-label="Refresh inbox"><i class="fas fa-rotate-right"></i></button>
             </div>
         </div>
         <div id="inboxContainer">
-            <div class="empty-state"><i class="fas fa-spinner fa-pulse"></i><p>Loading inbox...</p></div>
+            <!-- Initially skeletons -->
+            <div class="skeleton"><div class="skeleton-dot"></div><div class="email-content" style="flex:1"><div class="skeleton-line medium"></div><div class="skeleton-line short" style="margin-top:8px;"></div><div class="skeleton-line long" style="margin-top:8px;"></div></div></div>
+            <div class="skeleton"><div class="skeleton-dot"></div><div class="email-content" style="flex:1"><div class="skeleton-line medium"></div><div class="skeleton-line short" style="margin-top:8px;"></div><div class="skeleton-line long" style="margin-top:8px;"></div></div></div>
+            <div class="skeleton"><div class="skeleton-dot"></div><div class="email-content" style="flex:1"><div class="skeleton-line medium"></div><div class="skeleton-line short" style="margin-top:8px;"></div><div class="skeleton-line long" style="margin-top:8px;"></div></div></div>
         </div>
         <div class="support-card">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <i class="fas fa-heart" style="color: #ff7b4a;"></i>
-                <div>❤️ <strong>Enjoying TempMail?</strong> It's completely free. If it helps you, <strong>buy me a coffee</strong> – it keeps the lights on!</div>
+            <div class="text">
+                <i class="fas fa-heart" style="color:#ef4444;"></i>
+                <span>❤️ <strong>Enjoying TempMail?</strong> Support us on Patreon to keep it running.</span>
             </div>
-            <a href="https://ko-fi.com/tempmailproject" target="_blank" class="ko-fi-btn"><i class="fas fa-mug-hot"></i> Buy me a coffee</a>
+            <a href="https://patreon.com/MailTemple?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_fan&utm_content=copyLink" target="_blank" class="patreon-btn">
+                <i class="fab fa-patreon"></i> Become a Patron
+            </a>
         </div>
     </div>
 </div>
 
-<div id="messageModal" class="modal">
+<!-- Email Modal -->
+<div class="modal-overlay" id="messageModal" role="dialog" aria-modal="true" aria-labelledby="modalSubject">
     <div class="modal-card">
-        <div class="modal-header"><h3 id="modalSubject">Subject</h3><button class="icon-btn" id="closeModalBtn">&times;</button></div>
-        <div class="modal-body"><p><strong>From:</strong> <span id="modalFrom"></span></p><p><strong>Date:</strong> <span id="modalDate"></span></p><hr><div id="modalContent" style="white-space: pre-wrap;"></div></div>
-        <div class="modal-footer"><button class="btn-outline" id="modalDeleteBtn"><i class="far fa-trash-alt"></i> Delete</button><button class="btn-primary" id="closeModalFooterBtn">Close</button></div>
+        <div class="modal-header">
+            <h3 style="font-weight:600;" id="modalSubject">Subject</h3>
+            <button class="btn-close" id="closeModalBtn" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="meta">
+                <span><strong>From:</strong> <span id="modalFrom"></span></span>
+                <span><strong>Date:</strong> <span id="modalDate"></span></span>
+            </div>
+            <div id="modalContentContainer"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="modalDeleteBtn"><i class="far fa-trash-alt"></i> Delete</button>
+            <button class="btn btn-primary" id="closeModalFooterBtn">Close</button>
+        </div>
     </div>
 </div>
-<div id="toast" class="toast-msg">Copied</div>
+
+<!-- Custom confirm dialog (hidden by default) -->
+<div id="confirmDialog" class="confirm-dialog" style="display:none;" role="alertdialog" aria-modal="true">
+    <div class="confirm-box">
+        <p id="confirmMessage">Are you sure?</p>
+        <div class="confirm-buttons">
+            <button class="btn btn-outline" id="confirmCancel">Cancel</button>
+            <button class="btn btn-danger" id="confirmOk">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast container for undo -->
+<div id="toast" class="toast"></div>
 
 <script>
+    // Theme persistence
+    (function() {
+        const themeToggle = document.getElementById('themeToggle');
+        const darkIcon = '<i class="fas fa-moon"></i>';
+        const lightIcon = '<i class="fas fa-sun"></i>';
+        const savedTheme = localStorage.getItem('tempmail-theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            themeToggle.innerHTML = lightIcon;
+        } else {
+            themeToggle.innerHTML = darkIcon;
+        }
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            themeToggle.innerHTML = isDark ? lightIcon : darkIcon;
+            localStorage.setItem('tempmail-theme', isDark ? 'dark' : 'light');
+        });
+    })();
+
     let autoRefreshInterval, countdownInterval;
     let countdown = 10;
     let currentEmail = null;
+    let pendingDeleteTimeout = null; // for undo
 
     async function apiCall(url, options = {}) {
         const res = await fetch(url, { ...options, headers: { 'Content-Type': 'application/json' } });
@@ -355,13 +591,21 @@
         return res.json();
     }
 
+    function showSkeleton(container) {
+        container.innerHTML = '';
+        for (let i = 0; i < 3; i++) {
+            container.innerHTML += `<div class="skeleton"><div class="skeleton-dot"></div><div class="email-content" style="flex:1"><div class="skeleton-line medium"></div><div class="skeleton-line short" style="margin-top:8px;"></div><div class="skeleton-line long" style="margin-top:8px;"></div></div></div>`;
+        }
+    }
+
     async function loadInbox() {
+        const container = document.getElementById('inboxContainer');
+        showSkeleton(container);
         try {
             const data = await apiCall('/api/inbox');
             renderInbox(data.messages);
         } catch (err) {
-            console.error(err);
-            document.getElementById('inboxContainer').innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Failed to load inbox. ${err.message}</p><button onclick="location.reload()" class="btn-outline" style="margin-top:12px;">Retry</button></div>`;
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Failed to load inbox. ${err.message}</p><button onclick="location.reload()" class="btn btn-outline" style="margin-top:12px;">Retry</button></div>`;
         }
     }
 
@@ -372,10 +616,18 @@
         if (unreadCount > 0) {
             badge.style.display = 'inline-block';
             badge.innerText = unreadCount;
-        } else badge.style.display = 'none';
+            document.title = `(${unreadCount}) TempMail`;
+        } else {
+            badge.style.display = 'none';
+            document.title = 'TempMail · Professional Disposable Email';
+        }
 
         if (!messages.length) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-envelope-open" style="font-size:2.5rem;"></i><p>📭 Inbox empty</p><small>New emails will appear automatically.</small></div>`;
+            container.innerHTML = `<div class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" opacity="0.5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <p style="font-size:1.2rem; font-weight:500;">📭 Inbox empty</p>
+                <small>Send an email to your temporary address and it will appear here automatically.</small>
+            </div>`;
             return;
         }
 
@@ -384,15 +636,16 @@
             const timeAgo = new Date(msg.timestamp * 1000).toLocaleString();
             const unreadDot = !msg.read ? '<span class="unread-dot"></span>' : '';
             html += `
-                <div class="email-item" data-id="${msg.id}">
+                <div class="email-item" data-id="${msg.id}" role="button" tabindex="0" aria-label="Email from ${escapeHtml(msg.from)}: ${escapeHtml(msg.subject)}">
+                    ${unreadDot}
                     <div class="email-content">
-                        <div class="email-sender">${unreadDot} ${escapeHtml(msg.from)}</div>
+                        <div class="email-sender">${escapeHtml(msg.from)}</div>
                         <div class="email-subject">${escapeHtml(msg.subject)}</div>
                         <div class="email-meta"><i class="far fa-clock"></i> ${timeAgo}</div>
                     </div>
                     <div class="email-actions">
-                        <button class="icon-btn delete-single" data-id="${msg.id}" title="Delete"><i class="fas fa-trash-alt"></i></button>
-                        <button class="icon-btn read-btn" data-id="${msg.id}" title="Read"><i class="fas fa-envelope-open-text"></i></button>
+                        <button class="icon-btn delete-single" data-id="${msg.id}" title="Delete" aria-label="Delete email"><i class="fas fa-trash-alt"></i></button>
+                        <button class="icon-btn read-btn" data-id="${msg.id}" title="Read" aria-label="Open email"><i class="fas fa-envelope-open-text"></i></button>
                     </div>
                 </div>
             `;
@@ -400,23 +653,56 @@
         html += '</div>';
         container.innerHTML = html;
 
+        // Attach events
         document.querySelectorAll('.delete-single').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const id = btn.dataset.id;
-                if (confirm('Delete this message?')) {
-                    await apiCall(`/api/delete/${id}`, { method: 'POST' });
-                    loadInbox();
-                    showToast('Message deleted');
-                }
+                handleDeleteWithUndo(id);
             });
         });
         document.querySelectorAll('.read-btn, .email-item').forEach(el => {
             el.addEventListener('click', async (e) => {
-                if (e.target.closest('.delete-single')) return;
+                if (e.target.closest('.delete-single') || e.target.closest('.icon-btn')) return;
                 const id = el.closest('.email-item')?.dataset.id;
-                if (id) await openMessage(id);   // 🔥 FIX: NO parseInt – keep UUID string
+                if (id) await openMessage(id);
             });
+            // keyboard
+            el.addEventListener('keydown', async (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (e.target.closest('.delete-single') || e.target.closest('.icon-btn')) return;
+                    const id = el.closest('.email-item')?.dataset.id;
+                    if (id) await openMessage(id);
+                }
+            });
+        });
+    }
+
+    async function handleDeleteWithUndo(msgId) {
+        // Optimistic removal
+        const item = document.querySelector(`.email-item[data-id="${msgId}"]`);
+        if (item) item.style.opacity = '0.5';
+        // Show toast with undo button
+        const toast = document.getElementById('toast');
+        toast.innerHTML = `Message deleted <button class="undo-btn" id="undoDeleteBtn">Undo</button>`;
+        toast.classList.add('show');
+        // Clear any previous timeout
+        if (pendingDeleteTimeout) clearTimeout(pendingDeleteTimeout);
+        // Set timeout to actually delete
+        pendingDeleteTimeout = setTimeout(async () => {
+            await apiCall(`/api/delete/${msgId}`, { method: 'POST' });
+            loadInbox();
+            toast.classList.remove('show');
+            pendingDeleteTimeout = null;
+        }, 5000);
+
+        // Undo handler
+        document.getElementById('undoDeleteBtn').addEventListener('click', () => {
+            if (pendingDeleteTimeout) clearTimeout(pendingDeleteTimeout);
+            pendingDeleteTimeout = null;
+            toast.classList.remove('show');
+            loadInbox(); // refresh to restore the message (not yet deleted)
         });
     }
 
@@ -426,45 +712,86 @@
             document.getElementById('modalSubject').innerText = msg.subject || '(no subject)';
             document.getElementById('modalFrom').innerText = msg.from;
             document.getElementById('modalDate').innerText = new Date(msg.date * 1000).toLocaleString();
-            const content = msg.body_html || msg.body || '';
-            document.getElementById('modalContent').innerHTML = content.replace(/\n/g, '<br>');
+            const container = document.getElementById('modalContentContainer');
+            const body = msg.body || '';
+            if (/<[a-z][\s\S]*>/i.test(body)) {
+                container.innerHTML = `<iframe class="iframe-viewer" sandbox="allow-same-origin" srcdoc="${escapeHtmlAttribute(body)}" style="min-height: 300px; border: none; border-radius: 12px; width: 100%;"></iframe>`;
+            } else {
+                container.innerHTML = `<div class="email-body-container">${escapeHtml(body).replace(/\n/g, '<br>')}</div>`;
+            }
             const modal = document.getElementById('messageModal');
             modal.style.display = 'flex';
+            // Focus trap: focus the close button
+            document.getElementById('closeModalBtn').focus();
+            // Attach delete inside modal
             const delBtn = document.getElementById('modalDeleteBtn');
             const newDel = delBtn.cloneNode(true);
             delBtn.parentNode.replaceChild(newDel, delBtn);
             newDel.addEventListener('click', async () => {
                 await apiCall(`/api/delete/${msgId}`, { method: 'POST' });
-                modal.style.display = 'none';
+                closeModal();
                 loadInbox();
-                showToast('Message deleted');
+                showSimpleToast('Message deleted');
             });
         } catch (err) {
-            showToast('Failed to load message');
+            showSimpleToast('Failed to load message');
         }
     }
 
+    function closeModal() {
+        document.getElementById('messageModal').style.display = 'none';
+    }
+
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    document.getElementById('closeModalFooterBtn').addEventListener('click', closeModal);
+    window.addEventListener('click', (e) => {
+        if (e.target === document.getElementById('messageModal')) closeModal();
+    });
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('messageModal');
+            if (modal.style.display === 'flex') closeModal();
+        }
+    });
+
+    // Custom confirm dialog
+    function customConfirm(message) {
+        return new Promise((resolve) => {
+            const dialog = document.getElementById('confirmDialog');
+            document.getElementById('confirmMessage').innerText = message;
+            dialog.style.display = 'flex';
+            document.getElementById('confirmOk').onclick = () => {
+                dialog.style.display = 'none';
+                resolve(true);
+            };
+            document.getElementById('confirmCancel').onclick = () => {
+                dialog.style.display = 'none';
+                resolve(false);
+            };
+        });
+    }
+
     async function newAddress() {
-        if (confirm('Generate a new email address? Current inbox will be erased permanently.')) {
-            try {
-                const data = await apiCall('/api/new', { method: 'POST' });
-                currentEmail = data.email;
-                document.getElementById('currentEmail').innerText = currentEmail;
-                showToast('New address created');
-                loadInbox();
-                resetCountdown();
-            } catch (err) {
-                showToast('Error: ' + err.message);
-            }
+        const confirmed = await customConfirm('Generate a new email address? Current inbox will be erased permanently.');
+        if (!confirmed) return;
+        try {
+            const data = await apiCall('/api/new', { method: 'POST' });
+            currentEmail = data.email;
+            document.getElementById('currentEmail').innerText = currentEmail;
+            showSimpleToast('New address created');
+            loadInbox();
+            resetCountdown();
+        } catch (err) {
+            showSimpleToast('Error: ' + err.message);
         }
     }
 
     async function deleteAll() {
-        if (confirm('Delete ALL messages in this inbox? This cannot be undone.')) {
-            await apiCall('/api/delete_all', { method: 'POST' });
-            loadInbox();
-            showToast('All messages deleted');
-        }
+        const confirmed = await customConfirm('Delete ALL messages in this inbox? This cannot be undone.');
+        if (!confirmed) return;
+        await apiCall('/api/delete_all', { method: 'POST' });
+        loadInbox();
+        showSimpleToast('All messages deleted');
     }
 
     async function initSession() {
@@ -480,7 +807,7 @@
                 return true;
             }
         } catch (err) {
-            console.warn('Session check failed, creating new address');
+            console.warn('Session check failed');
             await newAddress();
             return false;
         }
@@ -489,17 +816,25 @@
     function copyAddress() {
         if (currentEmail && currentEmail !== '—') {
             navigator.clipboard.writeText(currentEmail);
-            showToast('📋 Email copied');
+            const btn = document.getElementById('copyAddressBtn');
+            const icon = btn.querySelector('i');
+            icon.className = 'fas fa-check';
+            btn.style.color = 'var(--success)';
+            showSimpleToast('📋 Email copied');
+            setTimeout(() => {
+                icon.className = 'far fa-copy';
+                btn.style.color = '';
+            }, 2000);
         } else {
-            showToast('No email address yet');
+            showSimpleToast('No email address yet');
         }
     }
 
-    function showToast(msg) {
+    function showSimpleToast(msg) {
         const toast = document.getElementById('toast');
-        toast.innerText = msg;
-        toast.style.opacity = '1';
-        setTimeout(() => toast.style.opacity = '0', 2000);
+        toast.innerHTML = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
     }
 
     function resetCountdown() { countdown = 10; document.getElementById('countdownSec').innerText = countdown; }
@@ -521,15 +856,15 @@
         document.getElementById('newAddressBtn').addEventListener('click', newAddress);
         document.getElementById('deleteAllBtn').addEventListener('click', deleteAll);
         document.getElementById('copyAddressBtn').addEventListener('click', copyAddress);
-        document.getElementById('manualRefreshBtn').addEventListener('click', () => { loadInbox(); resetCountdown(); showToast('Refreshing...'); });
-        const modal = document.getElementById('messageModal');
-        const closeModal = () => modal.style.display = 'none';
-        document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-        document.getElementById('closeModalFooterBtn').addEventListener('click', closeModal);
-        window.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        document.getElementById('manualRefreshBtn').addEventListener('click', () => { loadInbox(); resetCountdown(); showSimpleToast('Refreshing…'); });
     });
 
-    function escapeHtml(str) { return String(str).replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+    }
+    function escapeHtmlAttribute(str) {
+        return String(str).replace(/"/g, '&quot;').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
 </script>
 </body>
 </html>
