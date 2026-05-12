@@ -139,9 +139,10 @@ def get_messages(to_addr, limit=200):
     conn = get_db_connection()
     cur = conn.cursor()
 
+    # 🔧 FIX: include is_read column so the frontend can show unread dot
     cur.execute(
         """
-        SELECT id, from_addr, subject, received_at
+        SELECT id, from_addr, subject, received_at, is_read
         FROM messages
         WHERE to_addr = %s
         ORDER BY received_at DESC
@@ -160,7 +161,8 @@ def get_messages(to_addr, limit=200):
             "id": str(r[0]),
             "from": r[1],
             "subject": r[2],
-            "timestamp": r[3]
+            "timestamp": r[3],
+            "read": r[4]               # add read status
         }
         for r in rows
     ]

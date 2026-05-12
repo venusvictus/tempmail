@@ -415,7 +415,7 @@
             el.addEventListener('click', async (e) => {
                 if (e.target.closest('.delete-single')) return;
                 const id = el.closest('.email-item')?.dataset.id;
-                if (id) await openMessage(parseInt(id));
+                if (id) await openMessage(id);   // 🔥 FIX: NO parseInt – keep UUID string
             });
         });
     }
