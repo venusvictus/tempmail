@@ -3,6 +3,9 @@ import random
 import time
 import uuid
 import json
+import email
+import re
+from email import policy
 
 from flask import Flask, request, jsonify, session, render_template
 from flask_limiter import Limiter
@@ -226,6 +229,42 @@ def delete_all_messages(to_addr):
     cur.close()
     put_db_connection(conn)
 
+
+# ---------------------------------------------------
+# Email body cleaner – parses raw email into plain text
+# ---------------------------------------------------
+
+def extract_plain_text(raw_email):
+    """
+    Given a raw email string, return a plain‑text version of its body.
+    Handles multipart, quoted‑printable, and base64 encodings.
+    """
+    try:
+        msg = email.message_from_string(raw_email, policy=policy.default)
+
+        if msg.is_multipart():
+            # Look for a text/plain part first
+            for part in msg.walk():
+                if part.get_content_type() == "text/plain":
+                    charset = part.get_content_charset() or "utf-8"
+                    return part.get_payload(decode=True).decode(charset, errors="replace")
+            # Fallback to text/html and strip tags
+            for part in msg.walk():
+                if part.get_content_type() == "text/html":
+                    charset = part.get_content_charset() or "utf-8"
+                    html = part.get_payload(decode=True).decode(charset, errors="replace")
+                    text = re.sub(r'<[^>]+>', '', html)
+                    return text.strip()
+        else:
+            charset = msg.get_content_charset() or "utf-8"
+            return msg.get_payload(decode=True).decode(charset, errors="replace")
+    except Exception as e:
+        print("Email parsing error:", e)
+
+    # If parsing fails, return the original raw text
+    return raw_email
+
+
 # ---------------------------------------------------
 # Webhook endpoint – IMPROVED BODY EXTRACTION
 # ---------------------------------------------------
@@ -243,7 +282,7 @@ def webhook():
     subject = data.get("subject", "").strip()
 
     # Try to extract the email body from any common key
-    body = (
+    raw_body = (
         data.get("text") or
         data.get("html") or
         data.get("plain") or
@@ -253,6 +292,12 @@ def webhook():
         data.get("message") or
         ""
     ).strip()
+
+    # If the body looks like a raw email (contains common headers), parse it
+    if raw_body and ("Received:" in raw_body or "MIME-Version:" in raw_body):
+        body = extract_plain_text(raw_body)
+    else:
+        body = raw_body
 
     # If still empty, store the entire JSON payload as fallback (useful for debugging)
     if not body:
