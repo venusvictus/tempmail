@@ -5,6 +5,7 @@ import uuid
 import json
 import email
 import secrets
+import random                      # <-- ADDED
 import threading
 import queue as queue_module
 import warnings
@@ -33,23 +34,19 @@ load_dotenv()
 app = Flask(__name__)
 
 # ────────── CORS: allow any localhost port for Flutter dev ──────────
-# supports_credentials=True is needed because you use session cookies.
-# The regex covers http://localhost:anyport and http://127.0.0.1:anyport
 CORS(
     app,
     supports_credentials=True,
     origins=[
         r"http://localhost:\d+",
         r"http://127.0.0.1:\d+",
-        # Add your production Flutter front‑end URL later, e.g.:
-        # "https://your-flutter-app.pages.dev"
     ]
 )
 
 app.config.update(
     SECRET_KEY=os.getenv("SECRET_KEY", "supersecretkey"),
     SESSION_COOKIE_SAMESITE="None",
-    SESSION_COOKIE_SECURE=True,   # Must be True if you ever serve over HTTPS
+    SESSION_COOKIE_SECURE=True,
 )
 app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key")
 app.config["SESSION_COOKIE_HTTPONLY"] = True
@@ -154,19 +151,17 @@ def get_sse_queue(inbox_token):
         return sse_queues[inbox_token]
 
 def notify_inbox(inbox_token, event_data):
-    """Push new message event to the inbox's SSE queue if someone is listening."""
     q = sse_queues.get(inbox_token)
     if q:
         try:
             q.put_nowait(event_data)
         except queue_module.Full:
-            pass  # discard if queue is full (shouldn't happen)
+            pass
 
 # ---------------------------------------------------
 # Inbox management helpers
 # ---------------------------------------------------
 def create_inbox(ip_address=None):
-    """Create a new inbox row and return (token, email_address)."""
     domain = random.choice(DOMAINS)
     local_part = secrets.token_urlsafe(8)
     address = f"{local_part}@{domain}"
@@ -187,7 +182,6 @@ def create_inbox(ip_address=None):
     return token, address
 
 def get_inbox_email(token):
-    """Retrieve the email address for a given inbox token."""
     conn = get_db_connection()
     try:
         cur = conn.cursor()
@@ -205,7 +199,6 @@ OTP_REGEX = re.compile(r"\b\d{6}\b")
 OTP_KEYWORDS = ["verification", "code", "otp", "confirm", "login", "verify"]
 
 def detect_otp(text):
-    """Extract a 6‑digit OTP and a confidence flag from text."""
     matches = OTP_REGEX.findall(text)
     if not matches:
         return None, False
@@ -216,7 +209,6 @@ def detect_otp(text):
     return matches[0], False
 
 def extract_message_id(raw_email):
-    """Parse the Message-ID header from a raw email string."""
     try:
         msg = email.message_from_string(raw_email, policy=policy.default)
         return msg.get("Message-ID", "").strip()
@@ -224,7 +216,6 @@ def extract_message_id(raw_email):
         return None
 
 def store_message(to_addr, from_addr, subject, body, raw_email=None):
-    """Insert message into DB, handling deduplication and async OTP detection."""
     conn = get_db_connection()
     try:
         cur = conn.cursor()
@@ -374,7 +365,6 @@ def webhook():
         data.get("message") or ""
     ).strip()
 
-    # Extract plain text
     if raw_body and ("Received:" in raw_body or "MIME-Version:" in raw_body):
         body = extract_plain_text(raw_body)
     else:
@@ -383,7 +373,6 @@ def webhook():
     if not body:
         body = json.dumps(data, indent=2)
 
-    # Offload to a thread to avoid blocking the webhook response
     def process():
         if to_addr and from_addr:
             success = store_message(to_addr, from_addr, subject, body, raw_email=raw_body if raw_body else None)
@@ -442,7 +431,6 @@ def new_address():
     session["inbox_token"] = token
     return jsonify({"success": True, "email": address, "token": token})
 
-# Get inbox messages (requires valid inbox token in session)
 @app.route("/api/inbox")
 @limiter.limit("60 per minute")
 def inbox():
@@ -458,7 +446,6 @@ def inbox():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# SSE stream for live inbox updates
 @app.route("/api/inbox/stream")
 def inbox_stream():
     token = session.get("inbox_token")
@@ -476,7 +463,6 @@ def inbox_stream():
                 yield ": heartbeat\n\n"
     return Response(stream_with_context(event_stream()), mimetype="text/event-stream")
 
-# Single message (secured by session)
 @app.route("/api/message/<msg_id>")
 def get_message(msg_id):
     if "inbox_token" not in session:
@@ -512,7 +498,6 @@ def delete_all():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Basic metrics endpoint
 @app.route("/metrics")
 def metrics():
     conn = get_db_connection()
