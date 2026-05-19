@@ -771,19 +771,24 @@
         });
     }
 
-    async function newAddress() {
-        const confirmed = await customConfirm('Generate a new email address? Current inbox will be erased permanently.');
-        if (!confirmed) return;
+    // --- NEW: Silent address creation (no confirm) ---
+    async function createSilentAddress() {
         try {
             const data = await apiCall('/api/new', { method: 'POST' });
             currentEmail = data.email;
             document.getElementById('currentEmail').innerText = currentEmail;
-            showSimpleToast('New address created');
             loadInbox();
             resetCountdown();
         } catch (err) {
             showSimpleToast('Error: ' + err.message);
         }
+    }
+
+    // --- Modified: with confirm for user-triggered new address ---
+    async function newAddress() {
+        const confirmed = await customConfirm('Generate a new email address? Current inbox will be erased permanently.');
+        if (!confirmed) return;
+        await createSilentAddress();
     }
 
     async function deleteAll() {
@@ -801,15 +806,13 @@
                 currentEmail = status.email;
                 document.getElementById('currentEmail').innerText = currentEmail;
                 loadInbox();
-                return true;
             } else {
-                await newAddress();
-                return true;
+                // Silent creation on first load – no popup
+                await createSilentAddress();
             }
         } catch (err) {
             console.warn('Session check failed');
-            await newAddress();
-            return false;
+            await createSilentAddress();
         }
     }
 
