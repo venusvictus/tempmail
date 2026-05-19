@@ -5,7 +5,7 @@ import uuid
 import json
 import email
 import secrets
-import random                      # <-- ADDED
+import random                      # <-- ADDED (was missing)
 import threading
 import queue as queue_module
 import warnings
@@ -56,12 +56,13 @@ app.config["SESSION_COOKIE_SECURE"] = os.getenv("SESSION_COOKIE_SECURE", "False"
 # ---------------------------------------------------
 # Security headers (Talisman)
 # ---------------------------------------------------
+# ✅ FIXED CSP – allows inline style and script (otherwise UI is broken)
 csp = {
     'default-src': ["'self'"],
-    'style-src': ["'self'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
+    'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
     'font-src': ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
     'img-src': ["'self'", 'data:', 'https://cdn.openai.com'],
-    'script-src': ["'self'"],
+    'script-src': ["'self'", "'unsafe-inline'"],
 }
 Talisman(
     app,
