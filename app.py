@@ -9,6 +9,8 @@ import random
 import threading
 import queue as queue_module
 import warnings
+import hmac
+import hashlib
 from email import policy
 from datetime import datetime, timedelta, timezone
 from functools import wraps
@@ -19,11 +21,11 @@ from flask_limiter.util import get_remote_address
 from flask_talisman import Talisman
 from dotenv import load_dotenv
 from flask_cors import CORS
-
+import requests
 import psycopg2
 import psycopg2.pool
 import redis
-import nh3  # <-- HTML sanitizer (install with: pip install nh3)
+import nh3
 
 # ---------------------------------------------------
 # Load environment variables
@@ -35,24 +37,21 @@ load_dotenv()
 # ---------------------------------------------------
 app = Flask(__name__)
 
-# ────────── CORS: allow any localhost port for Flutter dev ──────────
 CORS(
     app,
-    supports_credentials=False,  # We no longer use cookies/sessions
+    supports_credentials=False,
     origins=[
         r"http://localhost:\d+",
         r"http://127.0.0.1:\d+",
-        "https://yourdomain.com",  # replace with your frontend domain
+        "https://yourdomain.com",
     ]
 )
 
-app.config.update(
-    SECRET_KEY=os.getenv("SECRET_KEY", "supersecretkey"),
-)
+app.config.update(SECRET_KEY=os.getenv("SECRET_KEY", "supersecretkey"))
 app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key")
 
 # ---------------------------------------------------
-# Security headers (Talisman) – enforce HTTPS
+# Security headers (Talisman)
 # ---------------------------------------------------
 csp = {
     'default-src': ["'self'"],
@@ -72,7 +71,7 @@ Talisman(
 )
 
 # ---------------------------------------------------
-# Rate limiting (Redis or in‑memory fallback)
+# Rate limiting
 # ---------------------------------------------------
 REDIS_URL = os.getenv("REDIS_URL")
 if REDIS_URL:
@@ -85,10 +84,9 @@ if REDIS_URL:
         )
         print("Using Redis for rate limiting")
     except Exception as e:
-        warnings.warn(f"Redis connection failed, falling back to in‑memory storage: {e}")
+        warnings.warn(f"Redis connection failed: {e}")
         limiter = Limiter(key_func=get_remote_address, default_limits=["200 per minute"])
 else:
-    warnings.warn("REDIS_URL not set – using in‑memory rate limiting")
     limiter = Limiter(key_func=get_remote_address, default_limits=["200 per minute"])
 limiter.init_app(app)
 
@@ -104,7 +102,7 @@ if not DOMAINS:
     DOMAINS = ["example.com"]
 
 # ---------------------------------------------------
-# Database (Neon)
+# Database
 # ---------------------------------------------------
 DATABASE_URL = os.getenv("DATABASE_URL")
 db_pool = None
@@ -137,7 +135,54 @@ def put_db_connection(conn):
         db_pool.putconn(conn)
 
 # ---------------------------------------------------
-# Token authentication decorator
+# User helper functions (for web session)
+# ---------------------------------------------------
+def get_or_create_user(email):
+    """Get user from database, create if not exists."""
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT id, email, is_premium, premium_expires_at FROM users WHERE email = %s", (email,))
+        row = cur.fetchone()
+        if row:
+            return {
+                'id': row[0],
+                'email': row[1],
+                'is_premium': row[2],
+                'premium_expires_at': row[3]
+            }
+        else:
+            # Create new user
+            cur.execute(
+                "INSERT INTO users (email) VALUES (%s) RETURNING id, email, is_premium, premium_expires_at",
+                (email,)
+            )
+            row = cur.fetchone()
+            conn.commit()
+            return {
+                'id': row[0],
+                'email': row[1],
+                'is_premium': row[2],
+                'premium_expires_at': row[3]
+            }
+    finally:
+        put_db_connection(conn)
+
+def set_user_premium(email, is_premium=True, expires_at=None):
+    """Mark user as premium (web)."""
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE users SET is_premium = %s, premium_expires_at = %s WHERE email = %s",
+            (is_premium, expires_at, email)
+        )
+        conn.commit()
+    finally:
+        put_db_connection(conn)
+
+# ---------------------------------------------------
+# Token authentication decorator (for email API)
 # ---------------------------------------------------
 def token_required(f):
     @wraps(f)
@@ -146,7 +191,6 @@ def token_required(f):
         if not auth_header.startswith("Bearer "):
             return jsonify({"error": "Missing or invalid token"}), 401
         token = auth_header.split(" ")[1]
-
         conn = get_db_connection()
         try:
             cur = conn.cursor()
@@ -157,7 +201,7 @@ def token_required(f):
             row = cur.fetchone()
             if not row:
                 return jsonify({"error": "Invalid or expired token"}), 401
-            if row[1]:  # is_banned
+            if row[1]:
                 return jsonify({"error": "Inbox banned"}), 403
             g.inbox_token = token
             g.inbox_address = row[0]
@@ -192,7 +236,7 @@ def per_token_limit(limit_per_minute=60):
     return decorator
 
 # ---------------------------------------------------
-# SSE pub/sub (in‑memory, one listener per inbox)
+# SSE pub/sub (in‑memory)
 # ---------------------------------------------------
 sse_queues = {}
 sse_lock = threading.Lock()
@@ -212,18 +256,13 @@ def notify_inbox(inbox_token, event_data):
             pass
 
 # ---------------------------------------------------
-# Inbox management helpers
+# Inbox management helpers (unchanged)
 # ---------------------------------------------------
 def create_inbox(ip_address=None, captcha_token=None):
-    # Optional: verify captcha if provided (implement later)
-    # if captcha_token and not verify_turnstile(captcha_token):
-    #     raise Exception("CAPTCHA failed")
-
     domain = random.choice(DOMAINS)
     local_part = secrets.token_urlsafe(8)
     address = f"{local_part}@{domain}"
     token = str(uuid.uuid4())
-
     conn = get_db_connection()
     try:
         cur = conn.cursor()
@@ -232,10 +271,8 @@ def create_inbox(ip_address=None, captcha_token=None):
             (token, address, domain, ip_address)
         )
         conn.commit()
-        cur.close()
     finally:
         put_db_connection(conn)
-
     return token, address
 
 def get_inbox_email(token):
@@ -244,13 +281,12 @@ def get_inbox_email(token):
         cur = conn.cursor()
         cur.execute("SELECT address FROM inboxes WHERE token = %s AND is_banned = FALSE", (token,))
         row = cur.fetchone()
-        cur.close()
         return row[0] if row else None
     finally:
         put_db_connection(conn)
 
 # ---------------------------------------------------
-# Message functions (with dedup and OTP detection)
+# Message functions (unchanged)
 # ---------------------------------------------------
 OTP_REGEX = re.compile(r"\b\d{6}\b")
 OTP_KEYWORDS = ["verification", "code", "otp", "confirm", "login", "verify"]
@@ -273,20 +309,16 @@ def extract_message_id(raw_email):
         return None
 
 def sanitize_html(html_content):
-    """Remove all dangerous tags and attributes using nh3 (ammonia wrapper)."""
     return nh3.clean(html_content, tags=nh3.ALLOWED_TAGS, attributes=nh3.ALLOWED_ATTRIBUTES)
 
 def store_message(to_addr, from_addr, subject, body, raw_email=None):
-    # Sanitize body if it contains HTML
     if body and ("<" in body and ">" in body):
         body = sanitize_html(body)
-
     conn = get_db_connection()
     try:
         cur = conn.cursor()
         msg_id = extract_message_id(raw_email) if raw_email else None
         otp_code, otp_detected = detect_otp(body)
-
         cur.execute(
             """INSERT INTO messages
                (id, to_addr, from_addr, subject, body, received_at, message_id, otp_code, otp_detected)
@@ -297,7 +329,7 @@ def store_message(to_addr, from_addr, subject, body, raw_email=None):
                 to_addr,
                 from_addr,
                 subject,
-                body[:10000],  # limit body length to 10k chars
+                body[:10000],
                 int(time.time()),
                 msg_id,
                 otp_code,
@@ -305,7 +337,6 @@ def store_message(to_addr, from_addr, subject, body, raw_email=None):
             )
         )
         conn.commit()
-        cur.close()
         return True
     except Exception as e:
         print("Store message failed:", e)
@@ -324,7 +355,6 @@ def get_messages(to_addr, limit=200):
             (to_addr, limit)
         )
         rows = cur.fetchall()
-        cur.close()
         return [{
             "id": str(r[0]),
             "from": r[1],
@@ -346,7 +376,6 @@ def get_single_message(msg_id, inbox_address):
             (msg_id, inbox_address)
         )
         row = cur.fetchone()
-        cur.close()
         if not row:
             return None
         return {
@@ -366,7 +395,6 @@ def delete_message_by_id(msg_id, inbox_address):
         cur = conn.cursor()
         cur.execute("DELETE FROM messages WHERE id = %s AND to_addr = %s", (msg_id, inbox_address))
         conn.commit()
-        cur.close()
     finally:
         put_db_connection(conn)
 
@@ -376,13 +404,9 @@ def delete_all_messages(to_addr):
         cur = conn.cursor()
         cur.execute("DELETE FROM messages WHERE to_addr = %s", (to_addr,))
         conn.commit()
-        cur.close()
     finally:
         put_db_connection(conn)
 
-# ---------------------------------------------------
-# Email body parser (plain text extraction)
-# ---------------------------------------------------
 def extract_plain_text(raw_email):
     try:
         msg = email.message_from_string(raw_email, policy=policy.default)
@@ -404,7 +428,7 @@ def extract_plain_text(raw_email):
     return raw_email
 
 # ---------------------------------------------------
-# Webhook endpoint (secured, async processing)
+# Webhook (for incoming emails)
 # ---------------------------------------------------
 WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET")
 
@@ -415,33 +439,23 @@ def webhook():
         received_secret = request.headers.get("X-Webhook-Secret")
         if received_secret != WEBHOOK_SECRET:
             return jsonify({"error": "Unauthorized"}), 401
-
     data = request.get_json()
     if not data:
         return "Bad request: no JSON", 400
-
-    # Validate required fields
     to_addr = data.get("to", "").strip()
     from_addr = data.get("from", "").strip()
     subject = data.get("subject", "").strip()
     if not to_addr or not from_addr:
         return "Missing to/from", 400
-
-    # Limit email size
     raw_body = data.get("raw", "")
-    if len(raw_body) > 2_000_000:  # 2MB
-        print(f"Email too large: {len(raw_body)} bytes")
+    if len(raw_body) > 2_000_000:
         return "Email too large", 413
-
     if raw_body and ("Received:" in raw_body or "MIME-Version:" in raw_body):
         body = extract_plain_text(raw_body)
     else:
         body = raw_body
-
     if not body:
         body = json.dumps(data, indent=2)
-
-    # Optional: block known spammer domains
     blocked_domains = os.getenv("BLOCKED_SENDER_DOMAINS", "").split(",")
     if any(blocked in from_addr for blocked in blocked_domains):
         return "Blocked sender", 403
@@ -472,7 +486,7 @@ def webhook():
     return "OK", 200
 
 # ---------------------------------------------------
-# Frontend routes (with session-based auth)
+# Frontend routes (session-based auth)
 # ---------------------------------------------------
 @app.route("/")
 def index():
@@ -482,19 +496,17 @@ def index():
 @app.route("/auth", methods=["GET", "POST"])
 def auth():
     if request.method == "POST":
-        # Simple demo login – accept any email/password for now
-        # In a real app, validate credentials against a database.
         email = request.form.get("email")
         password = request.form.get("password")
-        # For demo, just check that they filled something.
         if email and password:
-            session['user'] = {'email': email}
+            # Simple demo auth – in production, verify against your user DB
+            # For now, just ensure user exists in DB
+            user = get_or_create_user(email)
+            session['user'] = {'email': user['email'], 'id': user['id']}
             return redirect(url_for('index'))
         else:
-            # Render auth page with error
             return render_template("auth.html", error="Please fill in all fields")
     else:
-        # If already logged in, redirect to account page
         if 'user' in session:
             return redirect(url_for('account'))
         return render_template("auth.html")
@@ -508,6 +520,10 @@ def logout():
 def account():
     if 'user' not in session:
         return redirect(url_for('auth'))
+    user_email = session['user']['email']
+    user_data = get_or_create_user(user_email)
+    # Update session with premium status
+    session['user']['is_premium'] = user_data['is_premium']
     return render_template("account.html", user=session['user'])
 
 @app.route("/health")
@@ -515,7 +531,120 @@ def health():
     return jsonify({"status": "ok"})
 
 # ---------------------------------------------------
-# Inbox API (token required)
+# Lemon Squeezy Payment Routes
+# ---------------------------------------------------
+@app.route("/create-checkout")
+def create_checkout():
+    if 'user' not in session:
+        return redirect(url_for('auth'))
+    user_email = session['user']['email']
+    user_id = session['user']['id']
+
+    price_id = os.getenv("PREMIUM_PRICE_ID")
+    if not price_id:
+        return "Payment configuration missing", 500
+
+    checkout_url = "https://api.lemonsqueezy.com/v1/checkouts"
+    payload = {
+        "data": {
+            "type": "checkouts",
+            "attributes": {
+                "product_options": {
+                    "enabled_variants": [int(price_id)],
+                    "redirect_url": url_for('checkout_success', _external=True),
+                    "receipt_button_text": "Go to Dashboard",
+                    "receipt_thank_you_note": "Thank you for upgrading to Premium!"
+                },
+                "checkout_data": {
+                    "email": user_email,
+                    "custom": {
+                        "user_id": str(user_id),
+                        "user_email": user_email
+                    }
+                }
+            },
+            "relationships": {
+                "store": {
+                    "data": {
+                        "type": "stores",
+                        "id": os.getenv("LEMONSQUEEZY_STORE_ID")
+                    }
+                },
+                "variant": {
+                    "data": {
+                        "type": "variants",
+                        "id": price_id
+                    }
+                }
+            }
+        }
+    }
+
+    headers = {
+        "Accept": "application/vnd.api+json",
+        "Content-Type": "application/vnd.api+json",
+        "Authorization": f"Bearer {os.getenv('LEMONSQUEEZY_API_KEY')}"
+    }
+
+    try:
+        response = requests.post(checkout_url, json=payload, headers=headers, timeout=10)
+        if response.status_code == 201:
+            data = response.json()
+            checkout_url = data['data']['attributes']['url']
+            return redirect(checkout_url)
+        else:
+            print("Lemon Squeezy error:", response.text)
+            return "Payment setup failed. Please try again.", 500
+    except Exception as e:
+        print("Checkout error:", e)
+        return "Payment system error. Please try later.", 500
+
+@app.route("/checkout-success")
+def checkout_success():
+    return render_template("success.html")
+
+@app.route("/webhook/lemon", methods=["POST"])
+def lemon_webhook():
+    # Verify signature
+    secret = os.getenv("LEMONSQUEEZY_WEBHOOK_SECRET")
+    signature = request.headers.get("X-Signature")
+    if secret and signature:
+        expected = hmac.new(
+            secret.encode('utf-8'),
+            request.get_data(),
+            hashlib.sha256
+        ).hexdigest()
+        if not hmac.compare_digest(expected, signature):
+            return "Invalid signature", 401
+
+    data = request.json
+    event_name = data.get('meta', {}).get('event_name')
+
+    if event_name == 'order_created':
+        # Extract user email from custom data
+        attributes = data['data']['attributes']
+        first_item = attributes.get('first_order_item', {})
+        product_options = first_item.get('product_options', {})
+        custom = product_options.get('custom', {})
+        user_email = custom.get('user_email')
+        if not user_email:
+            # fallback
+            user_email = attributes.get('user_email')
+
+        if user_email:
+            # Grant premium for 30 days (or as per your plan)
+            expires_at = datetime.now() + timedelta(days=30)
+            set_user_premium(user_email, True, expires_at)
+            print(f"✅ Premium granted for {user_email}")
+
+    elif event_name == 'subscription_updated':
+        # Handle cancellations, etc. (optional)
+        pass
+
+    return "OK", 200
+
+# ---------------------------------------------------
+# Email API routes (unchanged)
 # ---------------------------------------------------
 @app.route("/api/status", methods=["GET"])
 @token_required
@@ -529,7 +658,6 @@ def status():
 @limiter.limit("10 per minute")
 def new_address():
     ip = request.remote_addr
-    # Optionally read captcha token from request body
     data = request.get_json(silent=True) or {}
     captcha_token = data.get("captcha_token")
     try:
@@ -537,7 +665,7 @@ def new_address():
         return jsonify({
             "success": True,
             "email": address,
-            "token": token  # return token directly (client must store it)
+            "token": token
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 400
@@ -598,13 +726,11 @@ def delete_all():
 @app.route("/api/delete_inbox", methods=["POST"])
 @token_required
 def delete_inbox():
-    """Permanently delete the inbox and all messages."""
     conn = get_db_connection()
     try:
         cur = conn.cursor()
         cur.execute("DELETE FROM inboxes WHERE token = %s", (g.inbox_token,))
         conn.commit()
-        cur.close()
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -620,7 +746,6 @@ def metrics():
         total_messages = cur.fetchone()[0]
         cur.execute("SELECT COUNT(*) FROM inboxes WHERE is_banned = FALSE")
         active_inboxes = cur.fetchone()[0]
-        cur.close()
         return jsonify({
             "total_messages": total_messages,
             "active_inboxes": active_inboxes
@@ -628,23 +753,16 @@ def metrics():
     finally:
         put_db_connection(conn)
 
-# ---------------------------------------------------
-# Cleanup cron (run every hour via external scheduler)
-# ---------------------------------------------------
 @app.route("/api/cleanup", methods=["POST"])
 def cleanup():
-    # Secure with a secret key
     if request.headers.get("X-Cleanup-Secret") != os.getenv("CLEANUP_SECRET"):
         return "Unauthorized", 401
     conn = get_db_connection()
     try:
         cur = conn.cursor()
-        # Delete messages older than 3 days
         cur.execute("DELETE FROM messages WHERE received_at < EXTRACT(EPOCH FROM NOW() - INTERVAL '3 days')")
-        # Delete inboxes older than 24 hours
         cur.execute("DELETE FROM inboxes WHERE created_at < NOW() - INTERVAL '1 day'")
         conn.commit()
-        cur.close()
         return "Cleanup done", 200
     finally:
         put_db_connection(conn)
