@@ -13,7 +13,7 @@ from email import policy
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 
-from flask import Flask, request, jsonify, render_template, Response, stream_with_context, g
+from flask import Flask, request, jsonify, render_template, Response, stream_with_context, g, session, redirect, url_for
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_talisman import Talisman
@@ -472,15 +472,43 @@ def webhook():
     return "OK", 200
 
 # ---------------------------------------------------
-# Frontend routes (no session, token-based)
+# Frontend routes (with session-based auth)
 # ---------------------------------------------------
 @app.route("/")
 def index():
-    return render_template("index.html")
+    is_logged_in = 'user' in session
+    return render_template("index.html", is_logged_in=is_logged_in)
 
-@app.route("/auth")
+@app.route("/auth", methods=["GET", "POST"])
 def auth():
-    return render_template("auth.html")
+    if request.method == "POST":
+        # Simple demo login – accept any email/password for now
+        # In a real app, validate credentials against a database.
+        email = request.form.get("email")
+        password = request.form.get("password")
+        # For demo, just check that they filled something.
+        if email and password:
+            session['user'] = {'email': email}
+            return redirect(url_for('index'))
+        else:
+            # Render auth page with error
+            return render_template("auth.html", error="Please fill in all fields")
+    else:
+        # If already logged in, redirect to account page
+        if 'user' in session:
+            return redirect(url_for('account'))
+        return render_template("auth.html")
+
+@app.route("/logout")
+def logout():
+    session.pop('user', None)
+    return redirect(url_for('index'))
+
+@app.route("/account")
+def account():
+    if 'user' not in session:
+        return redirect(url_for('auth'))
+    return render_template("account.html", user=session['user'])
 
 @app.route("/health")
 def health():
