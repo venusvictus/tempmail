@@ -53,7 +53,7 @@
             width: 100%;
             margin: 0 auto;
         }
-        /* ---- HEADER with Cat Icon ---- */
+        /* ---- HEADER with Cat Icon & Account ---- */
         .header {
             display: flex;
             align-items: center;
@@ -84,6 +84,21 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header-actions a {
+            color: var(--text);
+            font-size: 1.6rem;
+            transition: all var(--transition);
+            text-decoration: none;
+        }
+        .header-actions a:hover {
+            color: var(--neon-cyan);
+            transform: scale(1.1);
         }
         .theme-toggle {
             background: var(--surface);
@@ -217,6 +232,17 @@
         .btn-danger:hover {
             background: #e6004c;
             box-shadow: 0 0 40px rgba(255, 0, 85, 0.5);
+            transform: translateY(-2px);
+        }
+        /* Premium button (orange) */
+        .btn-premium {
+            background: var(--neon-orange);
+            color: #000;
+            box-shadow: 0 0 25px rgba(255, 109, 0, 0.3);
+        }
+        .btn-premium:hover {
+            background: #e65c00;
+            box-shadow: 0 0 40px rgba(255, 109, 0, 0.5);
             transform: translateY(-2px);
         }
 
@@ -365,13 +391,12 @@
             opacity: 0.7;
         }
 
-        /* ---- Support Card (neon-ified) ---- */
-        .support-card {
-            background: linear-gradient(135deg, rgba(255, 109, 0, 0.1), rgba(0, 229, 255, 0.08));
-            border: 1px solid rgba(255, 109, 0, 0.3);
+        /* ---- Premium Card (replaces Patreon) ---- */
+        .premium-card {
+            background: linear-gradient(135deg, rgba(255, 109, 0, 0.08), rgba(0, 229, 255, 0.06));
+            border: 1px solid rgba(255, 109, 0, 0.25);
             border-radius: var(--radius);
-            padding: 20px;
-            margin-top: 20px;
+            padding: 20px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -380,37 +405,18 @@
             backdrop-filter: blur(8px);
             box-shadow: 0 0 30px rgba(255, 109, 0, 0.05);
         }
-        .support-card .text {
+        .premium-card .text {
             display: flex;
             align-items: center;
             gap: 12px;
             color: var(--text);
         }
-        .support-card .text i {
+        .premium-card .text i {
             color: var(--neon-orange);
-            font-size: 1.4rem;
+            font-size: 1.6rem;
         }
-        .patreon-btn {
-            background: var(--neon-orange);
-            color: #000;
-            border-radius: 60px;
-            padding: 10px 28px;
-            font-weight: 700;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: all var(--transition);
-            font-family: 'Orbitron', monospace;
-            font-size: 0.75rem;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            box-shadow: 0 0 25px rgba(255, 109, 0, 0.3);
-        }
-        .patreon-btn:hover {
-            background: #e65c00;
-            box-shadow: 0 0 40px rgba(255, 109, 0, 0.5);
-            transform: translateY(-2px);
+        .premium-card .text strong {
+            color: var(--neon-orange);
         }
 
         /* ---- MODAL (neon) ---- */
@@ -617,8 +623,7 @@
             .email-actions { align-self: flex-end; opacity:1; }
             .address-row { flex-direction: column; }
             .btn { width: 100%; justify-content: center; }
-            .support-card { flex-direction: column; align-items: stretch; text-align: center; }
-            .patreon-btn { justify-content: center; }
+            .premium-card { flex-direction: column; align-items: stretch; text-align: center; }
             .modal-card { max-width: 100%; margin: 0 8px; }
         }
     </style>
@@ -627,12 +632,18 @@
 <div class="container">
     <div class="header">
         <div class="logo">
-            <i class="fas fa-cat"></i> <!-- Cat icon instead of envelope -->
+            <i class="fas fa-cat"></i>
             <span class="logo-text">MAIL TEMPLE</span>
         </div>
-        <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode" aria-label="Toggle theme">
-            <i class="fas fa-moon"></i>
-        </button>
+        <div class="header-actions">
+            <!-- Account icon linking to /auth (you can change the href later) -->
+            <a href="/auth" aria-label="Account" title="Account">
+                <i class="fas fa-user-circle"></i>
+            </a>
+            <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode" aria-label="Toggle theme">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
     </div>
 
     <div class="card">
@@ -666,15 +677,17 @@
             <div class="skeleton"><div class="skeleton-dot"></div><div class="email-content" style="flex:1"><div class="skeleton-line medium"></div><div class="skeleton-line short" style="margin-top:8px;"></div><div class="skeleton-line long" style="margin-top:8px;"></div></div></div>
             <div class="skeleton"><div class="skeleton-dot"></div><div class="email-content" style="flex:1"><div class="skeleton-line medium"></div><div class="skeleton-line short" style="margin-top:8px;"></div><div class="skeleton-line long" style="margin-top:8px;"></div></div></div>
         </div>
-        <div class="support-card">
-            <div class="text">
-                <i class="fas fa-heart" style="color: var(--neon-magenta);"></i>
-                <span>❤️ <strong>Enjoying Mail Temple?</strong> Support us on Patreon to keep it running.</span>
-            </div>
-            <a href="https://patreon.com/MailTemple?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_fan&utm_content=copyLink" target="_blank" class="patreon-btn">
-                <i class="fab fa-patreon"></i> Become a Patron
-            </a>
+    </div>
+
+    <!-- PREMIUM CARD (replaces Patreon) -->
+    <div class="premium-card">
+        <div class="text">
+            <i class="fas fa-crown"></i>
+            <span><strong>Go Premium</strong> – No ads · Unlimited inboxes · 30-day retention</span>
         </div>
+        <button class="btn btn-premium" id="upgradePremiumBtn">
+            <i class="fas fa-star"></i> Upgrade to Premium
+        </button>
     </div>
 </div>
 
@@ -1006,6 +1019,10 @@
         document.getElementById('deleteAllBtn').addEventListener('click', deleteAll);
         document.getElementById('copyAddressBtn').addEventListener('click', copyAddress);
         document.getElementById('manualRefreshBtn').addEventListener('click', () => { loadInbox(); resetCountdown(); showSimpleToast('Refreshing…'); });
+        // Premium button – for now, just a toast (you can link to a premium page later)
+        document.getElementById('upgradePremiumBtn').addEventListener('click', () => {
+            showSimpleToast('⭐ Upgrade page coming soon!');
+        });
     });
 
     function escapeHtml(str) {
