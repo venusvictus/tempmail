@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Mail Temple · Auth</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ---- NEON THEME (same as index) ---- */
+        :root {
+            --bg: #0B0B0B;
+            --surface: rgba(20, 20, 20, 0.9);
+            --surface2: rgba(26, 26, 26, 0.8);
+            --text: #ffffff;
+            --text2: rgba(255, 255, 255, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --neon-cyan: #00E5FF;
+            --neon-magenta: #FF0055;
+            --neon-orange: #FF6D00;
+            --shadow: 0 8px 32px rgba(0, 229, 255, 0.15);
+            --radius: 24px;
+            --radius-sm: 16px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .light {
+            --bg: #f0f4f8;
+            --surface: rgba(255, 255, 255, 0.85);
+            --surface2: rgba(240, 244, 248, 0.8);
+            --text: #0f172a;
+            --text2: #475569;
+            --border: rgba(0, 0, 0, 0.1);
+            --shadow: 0 8px 32px rgba(0, 229, 255, 0.2);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px 16px;
+            transition: background var(--transition), color var(--transition);
+        }
+        .container {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        /* ---- Header (mini) ---- */
+        .auth-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .logo i {
+            font-size: 2rem;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+        }
+        .logo-text {
+            font-family: 'Orbitron', monospace;
+            font-weight: 900;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .theme-toggle {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all var(--transition);
+            backdrop-filter: blur(6px);
+        }
+        .theme-toggle:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+            transform: scale(1.05);
+        }
+        /* ---- Card ---- */
+        .auth-card {
+            background: var(--surface);
+            backdrop-filter: blur(8px);
+            border-radius: var(--radius);
+            padding: 32px 28px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: all var(--transition);
+        }
+        .auth-card:hover {
+            box-shadow: 0 8px 40px rgba(0, 229, 255, 0.2);
+            border-color: rgba(0, 229, 255, 0.3);
+        }
+        .auth-title {
+            font-family: 'Orbitron', monospace;
+            font-weight: 900;
+            font-size: 1.8rem;
+            text-align: center;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+        .auth-subtitle {
+            text-align: center;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.9rem;
+            color: var(--neon-cyan);
+            opacity: 0.8;
+            letter-spacing: 2px;
+            margin-bottom: 24px;
+        }
+        /* ---- Form fields ---- */
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text2);
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all var(--transition);
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+        .form-group input:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+        }
+        .form-group input::placeholder {
+            color: var(--text2);
+            opacity: 0.6;
+        }
+        .form-group .input-icon {
+            position: relative;
+        }
+        .form-group .input-icon i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--neon-cyan);
+            opacity: 0.7;
+        }
+        .form-group .input-icon input {
+            padding-left: 44px;
+        }
+        /* ---- Buttons ---- */
+        .btn {
+            border-radius: 60px;
+            padding: 14px 28px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            border: none;
+            transition: all var(--transition);
+            width: 100%;
+            text-transform: uppercase;
+            outline: none;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 25px rgba(0, 229, 255, 0.3);
+        }
+        .btn-primary:hover {
+            background: #00d4f0;
+            box-shadow: 0 0 40px rgba(0, 229, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .btn-outline:hover {
+            background: rgba(0, 229, 255, 0.1);
+            border-color: var(--neon-cyan);
+        }
+        .btn-google {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 0.75rem;
+        }
+        .btn-google:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--neon-cyan);
+        }
+        .btn-google img {
+            height: 20px;
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: var(--text2);
+            font-size: 0.75rem;
+            margin: 20px 0;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+        .toggle-link {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text2);
+            font-size: 0.9rem;
+        }
+        .toggle-link a {
+            color: var(--neon-cyan);
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color var(--transition);
+        }
+        .toggle-link a:hover {
+            color: var(--neon-orange);
+        }
+        /* ---- error message ---- */
+        .error-msg {
+            background: rgba(255,0,85,0.15);
+            border: 1px solid var(--neon-magenta);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            color: var(--neon-magenta);
+            font-size: 0.85rem;
+            display: none;
+            margin-bottom: 16px;
+            align-items: center;
+            gap: 8px;
+        }
+        .error-msg i {
+            font-size: 1rem;
+        }
+        .error-msg.show {
+            display: flex;
+        }
+        /* ---- Responsive ---- */
+        @media (max-width: 480px) {
+            .auth-card { padding: 24px 18px; }
+            .auth-title { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="auth-header">
+        <a href="/" class="logo">
+            <i class="fas fa-cat"></i>
+            <span class="logo-text">MAIL TEMPLE</span>
+        </a>
+        <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+            <i class="fas fa-moon"></i>
+        </button>
+    </div>
+
+    <div class="auth-card">
+        <div class="auth-title">MAIL TEMPLE</div>
+        <div class="auth-subtitle" id="authSubtitle">WELCOME BACK</div>
+
+        <!-- Error message -->
+        <div id="errorMsg" class="error-msg">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="errorText">Invalid credentials</span>
+        </div>
+
+        <form id="authForm" novalidate>
+            <!-- Username (sign‑up only) -->
+            <div id="usernameGroup" class="form-group" style="display:none;">
+                <label for="username">Username</label>
+                <div class="input-icon">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="username" placeholder="Choose a username" autocomplete="username">
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+                <label for="email">Email</label>
+                <div class="input-icon">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" placeholder="your@email.com" required autocomplete="email">
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="••••••••" required minlength="6" autocomplete="current-password">
+                </div>
+            </div>
+
+            <!-- Confirm password (sign‑up only) -->
+            <div id="confirmGroup" class="form-group" style="display:none;">
+                <label for="confirmPassword">Confirm Password</label>
+                <div class="input-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="confirmPassword" placeholder="Confirm password" autocomplete="new-password">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                <i class="fas fa-arrow-right"></i> Sign In
+            </button>
+        </form>
+
+        <div class="divider">or</div>
+
+        <!-- Google sign‑in (placeholder) -->
+        <button class="btn btn-google" id="googleBtn">
+            <i class="fab fa-google" style="font-size:1.2rem;"></i> Continue with Google
+        </button>
+
+        <div class="toggle-link">
+            <span id="toggleText">Don't have an account?</span>
+            <a id="toggleLink">Create one</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---- Theme toggle ----
+    (function() {
+        const toggle = document.getElementById('themeToggle');
+        const darkIcon = '<i class="fas fa-moon"></i>';
+        const lightIcon = '<i class="fas fa-sun"></i>';
+        const saved = localStorage.getItem('mailtemple-theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDark = saved ? saved === 'dark' : prefersDark;
+        if (isDark) {
+            document.documentElement.classList.remove('light');
+            toggle.innerHTML = lightIcon;
+        } else {
+            document.documentElement.classList.add('light');
+            toggle.innerHTML = darkIcon;
+        }
+        toggle.addEventListener('click', () => {
+            const isLight = document.documentElement.classList.toggle('light');
+            toggle.innerHTML = isLight ? darkIcon : lightIcon;
+            localStorage.setItem('mailtemple-theme', isLight ? 'light' : 'dark');
+        });
+    })();
+
+    // ---- Toggle between Sign In and Sign Up ----
+    let isLogin = true;
+    const submitBtn = document.getElementById('submitBtn');
+    const authSubtitle = document.getElementById('authSubtitle');
+    const toggleText = document.getElementById('toggleText');
+    const toggleLink = document.getElementById('toggleLink');
+    const usernameGroup = document.getElementById('usernameGroup');
+    const confirmGroup = document.getElementById('confirmGroup');
+    const errorMsg = document.getElementById('errorMsg');
+    const errorText = document.getElementById('errorText');
+
+    function toggleMode() {
+        isLogin = !isLogin;
+        if (isLogin) {
+            authSubtitle.textContent = 'WELCOME BACK';
+            submitBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Sign In';
+            toggleText.textContent = "Don't have an account?";
+            toggleLink.textContent = 'Create one';
+            usernameGroup.style.display = 'none';
+            confirmGroup.style.display = 'none';
+            document.getElementById('password').setAttribute('autocomplete', 'current-password');
+        } else {
+            authSubtitle.textContent = 'CREATE YOUR ACCOUNT';
+            submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Sign Up';
+            toggleText.textContent = 'Already have an account?';
+            toggleLink.textContent = 'Sign in';
+            usernameGroup.style.display = 'block';
+            confirmGroup.style.display = 'block';
+            document.getElementById('password').setAttribute('autocomplete', 'new-password');
+        }
+        // Clear any previous error
+        errorMsg.classList.remove('show');
+        // Clear fields
+        document.getElementById('username').value = '';
+        document.getElementById('confirmPassword').value = '';
+    }
+
+    toggleLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleMode();
+    });
+
+    // ---- Form submission (placeholder) ----
+    document.getElementById('authForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        // Basic validation
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        let valid = true;
+        let err = '';
+
+        if (!email || !email.includes('@')) {
+            err = 'Please enter a valid email address.';
+            valid = false;
+        } else if (password.length < 6) {
+            err = 'Password must be at least 6 characters.';
+            valid = false;
+        } else if (!isLogin) {
+            const username = document.getElementById('username').value.trim();
+            const confirm = document.getElementById('confirmPassword').value;
+            if (!username) {
+                err = 'Username is required.';
+                valid = false;
+            } else if (password !== confirm) {
+                err = 'Passwords do not match.';
+                valid = false;
+            }
+        }
+
+        if (!valid) {
+            errorText.textContent = err;
+            errorMsg.classList.add('show');
+            return;
+        }
+
+        // Here you would send the data to your Flask backend.
+        // For now, just show a success toast (or redirect)
+        alert(isLogin ? 'Sign In successful (demo)' : 'Account created (demo)');
+        // You can later replace with fetch('/auth', {method: 'POST', body: formData})
+    });
+
+    // ---- Google button (placeholder) ----
+    document.getElementById('googleBtn').addEventListener('click', function() {
+        alert('Google sign‑in will be integrated later.');
+    });
+</script>
+</body>
+</html>
