@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Mail Temple · Account</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ---- NEON THEME (same as index) ---- */
+        :root {
+            --bg: #0B0B0B;
+            --surface: rgba(20, 20, 20, 0.9);
+            --surface2: rgba(26, 26, 26, 0.8);
+            --text: #ffffff;
+            --text2: rgba(255, 255, 255, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --neon-cyan: #00E5FF;
+            --neon-magenta: #FF0055;
+            --neon-orange: #FF6D00;
+            --shadow: 0 8px 32px rgba(0, 229, 255, 0.15);
+            --radius: 24px;
+            --radius-sm: 16px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .light {
+            --bg: #f0f4f8;
+            --surface: rgba(255, 255, 255, 0.85);
+            --surface2: rgba(240, 244, 248, 0.8);
+            --text: #0f172a;
+            --text2: #475569;
+            --border: rgba(0, 0, 0, 0.1);
+            --shadow: 0 8px 32px rgba(0, 229, 255, 0.2);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 24px 16px 60px;
+            transition: background var(--transition), color var(--transition);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .container {
+            max-width: 880px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        /* ---- HEADER ---- */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+        }
+        .logo i {
+            font-size: 2.2rem;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+            transition: text-shadow var(--transition);
+        }
+        .logo:hover i {
+            text-shadow: 0 0 30px rgba(0, 229, 255, 0.7);
+        }
+        .logo-text {
+            font-family: 'Orbitron', monospace;
+            font-weight: 900;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header-actions a {
+            color: var(--text);
+            font-size: 1.6rem;
+            transition: all var(--transition);
+            text-decoration: none;
+        }
+        .header-actions a:hover {
+            color: var(--neon-cyan);
+            transform: scale(1.1);
+        }
+        .theme-toggle {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all var(--transition);
+            backdrop-filter: blur(6px);
+        }
+        .theme-toggle:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        /* ---- Cards (glass) ---- */
+        .card {
+            background: var(--surface);
+            backdrop-filter: blur(8px);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: all var(--transition);
+        }
+        .card:hover {
+            box-shadow: 0 8px 40px rgba(0, 229, 255, 0.2);
+            border-color: rgba(0, 229, 255, 0.3);
+        }
+
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.9rem;
+            font-weight: 900;
+            color: var(--neon-cyan);
+            opacity: 0.8;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            padding-left: 4px;
+        }
+
+        .neon-container {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: all var(--transition);
+        }
+        .neon-container:hover {
+            box-shadow: 0 8px 40px rgba(0, 229, 255, 0.15);
+            border-color: rgba(0, 229, 255, 0.3);
+        }
+
+        /* ---- Buttons ---- */
+        .btn {
+            border-radius: 60px;
+            padding: 12px 28px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 0.8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            border: none;
+            transition: all var(--transition);
+            white-space: nowrap;
+            outline: none;
+            text-transform: uppercase;
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn-primary {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 25px rgba(0, 229, 255, 0.3);
+        }
+        .btn-primary:hover {
+            background: #00d4f0;
+            box-shadow: 0 0 40px rgba(0, 229, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .btn-outline:hover {
+            background: rgba(0, 229, 255, 0.1);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+        }
+        .btn-danger {
+            background: var(--neon-magenta);
+            color: #fff;
+            box-shadow: 0 0 25px rgba(255, 0, 85, 0.3);
+        }
+        .btn-danger:hover {
+            background: #e6004c;
+            box-shadow: 0 0 40px rgba(255, 0, 85, 0.5);
+            transform: translateY(-2px);
+        }
+        .btn-premium {
+            background: var(--neon-orange);
+            color: #000;
+            box-shadow: 0 0 25px rgba(255, 109, 0, 0.3);
+        }
+        .btn-premium:hover {
+            background: #e65c00;
+            box-shadow: 0 0 40px rgba(255, 109, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .premium-active {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--neon-cyan);
+            font-family: 'Orbitron', monospace;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+        .premium-active i {
+            font-size: 1.8rem;
+        }
+
+        .link-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .link-row .btn {
+            flex: 1;
+            min-width: 120px;
+            justify-content: center;
+        }
+        .list-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .list-item:last-child { border-bottom: none; }
+        .list-item:hover { opacity: 0.7; }
+        .list-item .icon {
+            font-size: 1.4rem;
+            color: var(--neon-magenta);
+        }
+        .list-item .text {
+            flex: 1;
+            color: var(--text);
+        }
+        .list-item .sub {
+            font-size: 0.8rem;
+            color: var(--text2);
+        }
+
+        /* ---- Confirm dialog (reused from index) ---- */
+        .confirm-dialog {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 16px;
+        }
+        .confirm-dialog.show { display: flex; }
+        .confirm-box {
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            box-shadow: 0 0 60px rgba(0, 229, 255, 0.1);
+            text-align: center;
+        }
+        .confirm-box p {
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+        .confirm-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            justify-content: center;
+        }
+        /* ---- Toast ---- */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            color: var(--text);
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 0 40px rgba(0, 229, 255, 0.1);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 2000;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .toast.show { opacity: 1; pointer-events: auto; }
+
+        @media (max-width: 600px) {
+            .header { flex-wrap: wrap; gap: 12px; }
+            .logo-text { font-size: 1.4rem; }
+            .link-row { flex-direction: column; }
+            .btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <a href="/" class="logo">
+            <i class="fas fa-cat"></i>
+            <span class="logo-text">MAIL TEMPLE</span>
+        </a>
+        <div class="header-actions">
+            <a href="/account" aria-label="Account" title="Account">
+                <i class="fas fa-user-circle"></i>
+            </a>
+            <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ----- PREMIUM SECTION ----- -->
+    <div class="section-title">PREMIUM</div>
+    <div class="neon-container" style="margin-bottom:24px;">
+        <!-- We'll use a mock – in a real app you'd check a session flag -->
+        <div id="premiumStatus">
+            <div class="premium-active">
+                <i class="fas fa-verified"></i>
+                <span>PREMIUM ACTIVE</span>
+                <span style="margin-left:auto;font-size:0.8rem;">
+                    <button class="btn btn-outline" id="restoreBtn" style="padding:6px 16px;font-size:0.7rem;">Restore</button>
+                </span>
+            </div>
+            <!-- Alternatively, if not premium, show upgrade button:
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <p style="color:var(--text2);">Get the most out of Mail Temple</p>
+                <button class="btn btn-premium" id="upgradeBtn"><i class="fas fa-star"></i> Upgrade to Premium</button>
+            </div>
+            -->
+        </div>
+        <!-- To test non-premium, uncomment the upgrade part and comment the premium-active block -->
+    </div>
+
+    <!-- ----- ACCOUNT SECTION ----- -->
+    <div class="section-title">ACCOUNT</div>
+    <div class="neon-container" style="margin-bottom:24px;">
+        <div id="accountStatus">
+            <!-- Simulate logged in -->
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                <i class="fas fa-check-circle" style="color:var(--neon-cyan); font-size:1.4rem;"></i>
+                <span style="color:var(--text);">Linked as <strong>user@example.com</strong></span>
+            </div>
+            <div class="link-row">
+                <button class="btn btn-outline" id="unlinkBtn"><i class="fas fa-sign-out-alt"></i> Unlink Account</button>
+                <button class="btn btn-outline" id="securityBtn"><i class="fas fa-shield-alt"></i> Security</button>
+            </div>
+            <!-- If not logged in, show this instead:
+            <div>
+                <p style="color:var(--text2); margin-bottom:12px;">Link your account to save your inbox forever and access it on any device.</p>
+                <a href="/auth" class="btn btn-primary" style="text-decoration:none; display:inline-flex; width:100%; justify-content:center;">
+                    <i class="fas fa-user-plus"></i> SIGN IN / CREATE ACCOUNT
+                </a>
+            </div>
+            -->
+        </div>
+    </div>
+
+    <!-- ----- INBOX SECTION ----- -->
+    <div class="section-title">INBOX</div>
+    <div class="neon-container" style="margin-bottom:24px;">
+        <div class="list-item" id="deleteInboxBtn">
+            <i class="fas fa-trash-alt icon"></i>
+            <div class="text">
+                <div>Delete This Inbox</div>
+                <div class="sub">Permanently deletes your address and all emails.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ----- APPEARANCE SECTION ----- -->
+    <div class="section-title">APPEARANCE</div>
+    <div class="neon-container" style="margin-bottom:24px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 4px;">
+            <span style="display:flex; align-items:center; gap:12px;">
+                <i class="fas fa-moon" style="color:var(--neon-cyan);"></i>
+                Dark Mode
+            </span>
+            <label class="switch">
+                <input type="checkbox" id="darkModeToggle" checked>
+                <span class="slider round"></span>
+            </label>
+        </div>
+    </div>
+
+    <!-- App version -->
+    <div style="text-align:center; margin-top:16px; color:var(--text2); opacity:0.4; font-size:0.8rem;">
+        Mail Temple v1.0.0
+    </div>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="confirm-dialog" id="confirmDialog">
+    <div class="confirm-box">
+        <p id="confirmMessage">Are you sure?</p>
+        <div class="confirm-buttons">
+            <button class="btn btn-outline" id="confirmCancel">Cancel</button>
+            <button class="btn btn-danger" id="confirmOk">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+    // ── Theme toggle (sync with index) ──
+    (function() {
+        const toggle = document.getElementById('themeToggle');
+        const darkIcon = '<i class="fas fa-moon"></i>';
+        const lightIcon = '<i class="fas fa-sun"></i>';
+        const saved = localStorage.getItem('mailtemple-theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDark = saved ? saved === 'dark' : prefersDark;
+        if (isDark) {
+            document.documentElement.classList.remove('light');
+            toggle.innerHTML = lightIcon;
+            document.getElementById('darkModeToggle').checked = true;
+        } else {
+            document.documentElement.classList.add('light');
+            toggle.innerHTML = darkIcon;
+            document.getElementById('darkModeToggle').checked = false;
+        }
+        toggle.addEventListener('click', () => {
+            const isLight = document.documentElement.classList.toggle('light');
+            toggle.innerHTML = isLight ? darkIcon : lightIcon;
+            localStorage.setItem('mailtemple-theme', isLight ? 'light' : 'dark');
+            document.getElementById('darkModeToggle').checked = !isLight;
+        });
+        // Also listen to switch toggle
+        document.getElementById('darkModeToggle').addEventListener('change', function() {
+            const isLight = !this.checked;
+            document.documentElement.classList.toggle('light', isLight);
+            localStorage.setItem('mailtemple-theme', isLight ? 'light' : 'dark');
+            toggle.innerHTML = isLight ? darkIcon : lightIcon;
+        });
+    })();
+
+    // ---- Toast helper ----
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // ---- Confirm dialog helper ----
+    function customConfirm(message) {
+        return new Promise((resolve) => {
+            const dialog = document.getElementById('confirmDialog');
+            document.getElementById('confirmMessage').textContent = message;
+            dialog.classList.add('show');
+            document.getElementById('confirmOk').onclick = () => {
+                dialog.classList.remove('show');
+                resolve(true);
+            };
+            document.getElementById('confirmCancel').onclick = () => {
+                dialog.classList.remove('show');
+                resolve(false);
+            };
+        });
+    }
+
+    // ---- Premium buttons ----
+    document.getElementById('restoreBtn')?.addEventListener('click', () => {
+        showToast('Restore purchases (demo)');
+    });
+    // For upgrade button (if you uncomment the upgrade block, add listener)
+    // document.getElementById('upgradeBtn')?.addEventListener('click', () => {
+    //     showToast('⭐ Upgrade page coming soon!');
+    // });
+
+    // ---- Account actions ----
+    document.getElementById('unlinkBtn')?.addEventListener('click', () => {
+        showToast('Account unlinked (demo)');
+    });
+    document.getElementById('securityBtn')?.addEventListener('click', () => {
+        showToast('Security settings coming soon');
+    });
+
+    // ---- Delete inbox ----
+    document.getElementById('deleteInboxBtn').addEventListener('click', async () => {
+        const confirmed = await customConfirm('Delete this inbox permanently? This cannot be undone.');
+        if (confirmed) {
+            showToast('Inbox deleted (demo)');
+            // In reality, you'd call /api/delete_inbox
+        }
+    });
+
+    // ---- Switch between premium active / upgrade (just for demo) ----
+    // You can toggle the visibility of premium blocks by changing the HTML.
+    // For now, we keep the "PREMIUM ACTIVE" block.
+</script>
+</body>
+</html>
