@@ -3,104 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>TempMail · Professional Disposable Email</title>
+    <title>Mail Temple · Disposable Email</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* ---- NEON THEME (match Flutter) ---- */
         :root {
-            --bg: #f8fafc;
-            --surface: #ffffff;
-            --surface2: #f1f5f9;
+            --bg: #0B0B0B;
+            --surface: rgba(20, 20, 20, 0.9);
+            --surface2: rgba(26, 26, 26, 0.8);
+            --text: #ffffff;
+            --text2: rgba(255, 255, 255, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --neon-cyan: #00E5FF;
+            --neon-magenta: #FF0055;
+            --neon-orange: #FF6D00;
+            --shadow: 0 8px 32px rgba(0, 229, 255, 0.15);
+            --radius: 24px;
+            --radius-sm: 16px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* Light variant (still neon, but lighter background) */
+        .light {
+            --bg: #f0f4f8;
+            --surface: rgba(255, 255, 255, 0.85);
+            --surface2: rgba(240, 244, 248, 0.8);
             --text: #0f172a;
             --text2: #475569;
-            --border: #e2e8f0;
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --danger: #ef4444;
-            --danger-hover: #dc2626;
-            --patreon: #f96854;
-            --patreon-hover: #e85d4a;
-            --success: #10b981;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
-            --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05);
-            --radius: 20px;
-            --radius-sm: 12px;
-            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .dark {
-            --bg: #0b1120;
-            --surface: #1e293b;
-            --surface2: #334155;
-            --text: #f1f5f9;
-            --text2: #94a3b8;
-            --border: #334155;
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -2px rgba(0,0,0,0.2);
-            --patreon: #f96854;
-            --patreon-hover: #e85d4a;
-            --success: #34d399;
+            --border: rgba(0, 0, 0, 0.1);
+            --shadow: 0 8px 32px rgba(0, 229, 255, 0.2);
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            font-family: 'Inter', system-ui, sans-serif;
+            font-family: 'Inter', sans-serif;
             background: var(--bg);
             color: var(--text);
-            line-height: 1.5;
+            line-height: 1.6;
             padding: 24px 16px 60px;
             transition: background var(--transition), color var(--transition);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }
-        .container { max-width: 880px; margin: 0 auto; }
+        .container {
+            max-width: 880px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        /* ---- HEADER with Cat Icon ---- */
         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
         .logo {
-            font-size: 1.8rem;
-            font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 10px;
-            color: var(--primary);
+            gap: 14px;
+            text-decoration: none;
+        }
+        .logo i {
+            font-size: 2.2rem;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+            transition: text-shadow var(--transition);
+        }
+        .logo:hover i {
+            text-shadow: 0 0 30px rgba(0, 229, 255, 0.7);
+        }
+        .logo-text {
+            font-family: 'Orbitron', monospace;
+            font-weight: 900;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         .theme-toggle {
-            background: var(--surface2);
-            border: none;
+            background: var(--surface);
+            border: 1px solid var(--border);
             color: var(--text);
-            width: 40px; height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background var(--transition);
+            font-size: 1.2rem;
+            transition: all var(--transition);
+            backdrop-filter: blur(6px);
         }
-        .theme-toggle:hover { background: var(--border); }
+        .theme-toggle:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        /* ---- Cards (glass) ---- */
         .card {
             background: var(--surface);
+            backdrop-filter: blur(8px);
             border-radius: var(--radius);
-            box-shadow: var(--shadow);
             padding: 24px;
             margin-bottom: 20px;
             border: 1px solid var(--border);
-            transition: box-shadow var(--transition), border var(--transition);
+            box-shadow: var(--shadow);
+            transition: all var(--transition);
         }
-        .card:hover { box-shadow: var(--shadow-lg); }
+        .card:hover {
+            box-shadow: 0 8px 40px rgba(0, 229, 255, 0.2);
+            border-color: rgba(0, 229, 255, 0.3);
+        }
+
         .badge-auto {
-            background: #dbeafe;
-            color: #1e40af;
+            background: rgba(0, 229, 255, 0.12);
+            color: var(--neon-cyan);
+            border: 1px solid rgba(0, 229, 255, 0.3);
             border-radius: 100px;
-            padding: 6px 14px;
-            font-size: 0.75rem;
-            font-weight: 500;
+            padding: 6px 16px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 0.5px;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.1);
         }
+        .badge-auto i {
+            font-size: 0.6rem;
+        }
+
         .address-row {
             display: flex;
             gap: 12px;
@@ -110,46 +150,76 @@
         }
         .email-display {
             flex: 1;
-            background: var(--surface2);
+            background: rgba(0, 0, 0, 0.4);
             border-radius: 60px;
-            padding: 12px 20px;
+            padding: 14px 24px;
             font-family: 'JetBrains Mono', 'Fira Code', monospace;
             font-size: 0.95rem;
             font-weight: 500;
-            border: 1px solid var(--border);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.05);
             word-break: break-all;
-            transition: background var(--transition);
+            color: var(--neon-cyan);
+            transition: all var(--transition);
         }
+        .email-display:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.15);
+        }
+
+        /* ---- Buttons (Neon) ---- */
         .btn {
             border-radius: 60px;
-            padding: 12px 22px;
-            font-weight: 600;
-            font-size: 0.85rem;
+            padding: 12px 28px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 0.8px;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             cursor: pointer;
             border: none;
             transition: all var(--transition);
             white-space: nowrap;
             outline: none;
+            text-transform: uppercase;
         }
         .btn:focus-visible {
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.5);
+            box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.5);
         }
-        .btn:active {
-            transform: scale(0.97);
+        .btn:active { transform: scale(0.96); }
+        .btn-primary {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 25px rgba(0, 229, 255, 0.3);
         }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-primary:hover {
+            background: #00d4f0;
+            box-shadow: 0 0 40px rgba(0, 229, 255, 0.5);
+            transform: translateY(-2px);
+        }
         .btn-outline {
             background: transparent;
             border: 1px solid var(--border);
             color: var(--text);
         }
-        .btn-outline:hover { background: var(--surface2); }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-danger:hover { background: var(--danger-hover); }
+        .btn-outline:hover {
+            background: rgba(0, 229, 255, 0.1);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+        }
+        .btn-danger {
+            background: var(--neon-magenta);
+            color: #fff;
+            box-shadow: 0 0 25px rgba(255, 0, 85, 0.3);
+        }
+        .btn-danger:hover {
+            background: #e6004c;
+            box-shadow: 0 0 40px rgba(255, 0, 85, 0.5);
+            transform: translateY(-2px);
+        }
+
         .inbox-header {
             display: flex;
             justify-content: space-between;
@@ -157,63 +227,80 @@
             margin-bottom: 20px;
         }
         .inbox-title {
-            font-weight: 700;
-            font-size: 1.35rem;
+            font-family: 'Orbitron', monospace;
+            font-weight: 900;
+            font-size: 1.5rem;
+            letter-spacing: 1.5px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            color: var(--text);
+        }
+        .inbox-title i {
+            color: var(--neon-cyan);
         }
         .unread-badge {
-            background: var(--danger);
-            color: white;
+            background: var(--neon-magenta);
+            color: #fff;
             font-size: 0.7rem;
-            font-weight: 600;
-            padding: 2px 10px;
+            font-weight: 700;
+            padding: 2px 12px;
             border-radius: 30px;
             display: none;
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
         }
         .refresh-info {
             font-size: 0.75rem;
             color: var(--text2);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            font-family: 'Orbitron', monospace;
         }
-        .email-list { display: flex; flex-direction: column; gap: 8px; }
+        .refresh-info i {
+            color: var(--neon-cyan);
+        }
+
+        /* ---- Email List ---- */
+        .email-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
         .email-item {
-            background: var(--surface);
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            padding: 16px;
+            padding: 16px 20px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 16px;
             cursor: pointer;
-            transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+            transition: all var(--transition);
             user-select: none;
             outline: none;
+            backdrop-filter: blur(4px);
         }
-        .email-item[role="button"]:focus-visible {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
-        }
-        .email-item:hover:not(.skeleton) {
+        .email-item:hover {
+            background: rgba(0, 229, 255, 0.05);
+            border-color: rgba(0, 229, 255, 0.3);
             transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
-        .email-item:active:not(.skeleton) {
-            transform: scale(0.99);
-        }
+        .email-item:active { transform: scale(0.99); }
         .unread-dot {
-            width: 10px; height: 10px;
-            background: var(--primary);
+            width: 10px;
+            height: 10px;
+            background: var(--neon-cyan);
             border-radius: 50%;
             flex-shrink: 0;
+            box-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
         }
         .email-content { flex: 1; min-width: 0; }
         .email-sender {
-            font-weight: 600;
-            font-size: 0.9rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -231,7 +318,7 @@
             margin-top: 4px;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
         }
         .email-actions {
             display: flex;
@@ -249,21 +336,39 @@
             cursor: pointer;
             padding: 6px;
             border-radius: 50%;
-            transition: color var(--transition), background var(--transition);
+            transition: all var(--transition);
             outline: none;
         }
-        .icon-btn:hover { color: var(--danger); background: #fee2e2; }
-        .icon-btn:focus-visible {
-            box-shadow: 0 0 0 2px var(--primary);
+        .icon-btn:hover {
+            color: var(--neon-magenta);
+            background: rgba(255, 0, 85, 0.1);
         }
+        .icon-btn:focus-visible { box-shadow: 0 0 0 2px var(--neon-cyan); }
+
+        /* ---- Empty State ---- */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: var(--text2);
         }
-        .empty-state svg { width: 80px; height: 80px; opacity: 0.7; margin-bottom: 16px; }
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            opacity: 0.6;
+            margin-bottom: 16px;
+            filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.2));
+        }
+        .empty-state small {
+            display: block;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+
+        /* ---- Support Card (neon-ified) ---- */
         .support-card {
-            background: linear-gradient(135deg, #fef3c7, #fef9c3);
+            background: linear-gradient(135deg, rgba(255, 109, 0, 0.1), rgba(0, 229, 255, 0.08));
+            border: 1px solid rgba(255, 109, 0, 0.3);
             border-radius: var(--radius);
             padding: 20px;
             margin-top: 20px;
@@ -272,50 +377,66 @@
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 16px;
-            border: 1px solid #fde68a;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 0 30px rgba(255, 109, 0, 0.05);
         }
         .support-card .text {
             display: flex;
             align-items: center;
-            gap: 10px;
-            color: #92400e;
+            gap: 12px;
+            color: var(--text);
+        }
+        .support-card .text i {
+            color: var(--neon-orange);
+            font-size: 1.4rem;
         }
         .patreon-btn {
-            background: var(--patreon);
-            color: white;
+            background: var(--neon-orange);
+            color: #000;
             border-radius: 60px;
-            padding: 10px 24px;
-            font-weight: 600;
+            padding: 10px 28px;
+            font-weight: 700;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            transition: background var(--transition);
+            gap: 10px;
+            transition: all var(--transition);
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 0 25px rgba(255, 109, 0, 0.3);
         }
-        .patreon-btn:hover { background: var(--patreon-hover); }
-        /* MODAL */
+        .patreon-btn:hover {
+            background: #e65c00;
+            box-shadow: 0 0 40px rgba(255, 109, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* ---- MODAL (neon) ---- */
         .modal-overlay {
             display: none;
             position: fixed;
             top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(6px);
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
             align-items: center;
             justify-content: center;
             z-index:1000;
             padding:16px;
-            animation: fadeIn 0.2s ease;
+            animation: fadeIn 0.25s ease;
         }
         .modal-card {
             background: var(--surface);
             max-width:700px;
             width:100%;
             border-radius: 24px;
-            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            box-shadow: 0 0 60px rgba(0, 229, 255, 0.1);
             display: flex;
             flex-direction: column;
             max-height: 85vh;
-            animation: slideUp 0.2s ease;
+            animation: slideUp 0.3s ease;
             outline: none;
         }
         @keyframes slideUp {
@@ -332,6 +453,12 @@
             justify-content: space-between;
             align-items: center;
         }
+        .modal-header h3 {
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            letter-spacing: 0.5px;
+        }
         .modal-footer { border-top: 1px solid var(--border); border-bottom: none; justify-content: flex-end; gap:12px; }
         .modal-body {
             padding: 24px;
@@ -344,17 +471,21 @@
             color: var(--text2);
             font-size: 0.85rem;
             margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
+        .modal-body .meta strong { color: var(--text); }
         .email-body-container {
-            background: var(--surface2);
+            background: rgba(0,0,0,0.3);
             border-radius: var(--radius-sm);
             padding: 20px;
             font-family: 'Inter', sans-serif;
             white-space: pre-wrap;
             word-break: break-word;
-            line-height: 1.6;
+            line-height: 1.7;
             max-height: 50vh;
             overflow: auto;
+            border: 1px solid var(--border);
         }
         .iframe-viewer {
             width: 100%;
@@ -366,18 +497,21 @@
         .btn-close {
             background: none;
             border: none;
-            font-size: 1.8rem;
+            font-size: 2rem;
             color: var(--text2);
             cursor: pointer;
             padding: 0 4px;
             line-height: 1;
+            transition: color var(--transition);
         }
-        /* CONFIRMATION DIALOG */
+        .btn-close:hover { color: var(--text); }
+
+        /* ---- Confirm Dialog ---- */
         .confirm-dialog {
             position: fixed;
             top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(4px);
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -387,27 +521,39 @@
         .confirm-box {
             background: var(--surface);
             border-radius: 24px;
-            padding: 24px;
+            padding: 32px;
             max-width: 400px;
             width: 100%;
-            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            box-shadow: 0 0 60px rgba(0, 229, 255, 0.1);
             text-align: center;
+        }
+        .confirm-box p {
+            font-weight: 500;
+            font-size: 1.1rem;
         }
         .confirm-buttons {
             display: flex;
             gap: 12px;
-            margin-top: 20px;
+            margin-top: 24px;
             justify-content: center;
         }
-        /* SKELETON LOADER */
+
+        /* ---- Skeleton Loader (neon) ---- */
         .skeleton {
             display: flex;
             gap: 14px;
-            padding: 16px;
+            padding: 16px 20px;
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            background: var(--surface);
+            background: rgba(255,255,255,0.02);
             align-items: center;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
         }
         .skeleton-dot {
             width: 10px; height: 10px;
@@ -419,51 +565,61 @@
             height: 10px;
             background: var(--border);
             border-radius: 6px;
-            animation: shimmer 1.5s infinite;
         }
         .skeleton-line.short { width: 40%; }
         .skeleton-line.medium { width: 70%; }
         .skeleton-line.long { width: 90%; }
-        @keyframes shimmer {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
-        }
-        /* TOAST */
+
+        /* ---- Toast ---- */
         .toast {
             position: fixed;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            background: #1e293b;
-            color: white;
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            color: var(--text);
             padding: 12px 28px;
             border-radius: 60px;
             font-size: 0.85rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 0 40px rgba(0, 229, 255, 0.1);
             opacity: 0;
             transition: opacity 0.3s;
             z-index: 2000;
             pointer-events: none;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 14px;
         }
         .toast.show { opacity: 1; pointer-events: auto; }
         .toast .undo-btn {
             background: transparent;
-            border: 1px solid white;
-            color: white;
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
             border-radius: 30px;
-            padding: 4px 12px;
+            padding: 4px 14px;
             font-weight: 600;
             cursor: pointer;
             font-size: 0.8rem;
+            transition: all var(--transition);
         }
+        .toast .undo-btn:hover {
+            background: var(--neon-cyan);
+            color: #000;
+        }
+
+        /* ---- Responsive ---- */
         @media (max-width: 600px) {
+            .header { flex-wrap: wrap; gap: 12px; }
+            .logo-text { font-size: 1.4rem; }
             .email-item { flex-direction: column; align-items: flex-start; }
             .email-actions { align-self: flex-end; opacity:1; }
             .address-row { flex-direction: column; }
             .btn { width: 100%; justify-content: center; }
+            .support-card { flex-direction: column; align-items: stretch; text-align: center; }
+            .patreon-btn { justify-content: center; }
+            .modal-card { max-width: 100%; margin: 0 8px; }
         }
     </style>
 </head>
@@ -471,10 +627,10 @@
 <div class="container">
     <div class="header">
         <div class="logo">
-            <i class="fas fa-envelope-open-text" style="color: var(--primary);"></i>
-            TempMail
+            <i class="fas fa-cat"></i> <!-- Cat icon instead of envelope -->
+            <span class="logo-text">MAIL TEMPLE</span>
         </div>
-        <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode" aria-label="Toggle dark mode">
+        <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode" aria-label="Toggle theme">
             <i class="fas fa-moon"></i>
         </button>
     </div>
@@ -489,7 +645,7 @@
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
             <button class="btn btn-primary" id="newAddressBtn"><i class="fas fa-plus-circle"></i> New Address</button>
-            <button class="btn btn-danger" id="deleteAllBtn" style="background:#ef4444; color:white;"><i class="far fa-trash-alt"></i> Delete All</button>
+            <button class="btn btn-danger" id="deleteAllBtn"><i class="far fa-trash-alt"></i> Delete All</button>
         </div>
     </div>
 
@@ -505,15 +661,15 @@
             </div>
         </div>
         <div id="inboxContainer">
-            <!-- Initially skeletons -->
+            <!-- Skeleton loaders -->
             <div class="skeleton"><div class="skeleton-dot"></div><div class="email-content" style="flex:1"><div class="skeleton-line medium"></div><div class="skeleton-line short" style="margin-top:8px;"></div><div class="skeleton-line long" style="margin-top:8px;"></div></div></div>
             <div class="skeleton"><div class="skeleton-dot"></div><div class="email-content" style="flex:1"><div class="skeleton-line medium"></div><div class="skeleton-line short" style="margin-top:8px;"></div><div class="skeleton-line long" style="margin-top:8px;"></div></div></div>
             <div class="skeleton"><div class="skeleton-dot"></div><div class="email-content" style="flex:1"><div class="skeleton-line medium"></div><div class="skeleton-line short" style="margin-top:8px;"></div><div class="skeleton-line long" style="margin-top:8px;"></div></div></div>
         </div>
         <div class="support-card">
             <div class="text">
-                <i class="fas fa-heart" style="color:#ef4444;"></i>
-                <span>❤️ <strong>Enjoying TempMail?</strong> Support us on Patreon to keep it running.</span>
+                <i class="fas fa-heart" style="color: var(--neon-magenta);"></i>
+                <span>❤️ <strong>Enjoying Mail Temple?</strong> Support us on Patreon to keep it running.</span>
             </div>
             <a href="https://patreon.com/MailTemple?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_fan&utm_content=copyLink" target="_blank" class="patreon-btn">
                 <i class="fab fa-patreon"></i> Become a Patron
@@ -526,7 +682,7 @@
 <div class="modal-overlay" id="messageModal" role="dialog" aria-modal="true" aria-labelledby="modalSubject">
     <div class="modal-card">
         <div class="modal-header">
-            <h3 style="font-weight:600;" id="modalSubject">Subject</h3>
+            <h3 id="modalSubject">Subject</h3>
             <button class="btn-close" id="closeModalBtn" aria-label="Close modal">&times;</button>
         </div>
         <div class="modal-body">
@@ -543,7 +699,7 @@
     </div>
 </div>
 
-<!-- Custom confirm dialog (hidden by default) -->
+<!-- Custom confirm dialog -->
 <div id="confirmDialog" class="confirm-dialog" style="display:none;" role="alertdialog" aria-modal="true">
     <div class="confirm-box">
         <p id="confirmMessage">Are you sure?</p>
@@ -554,33 +710,37 @@
     </div>
 </div>
 
-<!-- Toast container for undo -->
+<!-- Toast -->
 <div id="toast" class="toast"></div>
 
 <script>
-    // Theme persistence
+    // ── Theme persistence (default dark) ──
     (function() {
         const themeToggle = document.getElementById('themeToggle');
         const darkIcon = '<i class="fas fa-moon"></i>';
         const lightIcon = '<i class="fas fa-sun"></i>';
-        const savedTheme = localStorage.getItem('tempmail-theme');
-        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
+        const saved = localStorage.getItem('mailtemple-theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDark = saved ? saved === 'dark' : prefersDark;
+        if (isDark) {
+            document.documentElement.classList.remove('light');
             themeToggle.innerHTML = lightIcon;
         } else {
+            document.documentElement.classList.add('light');
             themeToggle.innerHTML = darkIcon;
         }
         themeToggle.addEventListener('click', () => {
-            const isDark = document.documentElement.classList.toggle('dark');
-            themeToggle.innerHTML = isDark ? lightIcon : darkIcon;
-            localStorage.setItem('tempmail-theme', isDark ? 'dark' : 'light');
+            const isLight = document.documentElement.classList.toggle('light');
+            themeToggle.innerHTML = isLight ? darkIcon : lightIcon;
+            localStorage.setItem('mailtemple-theme', isLight ? 'light' : 'dark');
         });
     })();
 
+    // ── All JavaScript functions remain exactly the same ──
     let autoRefreshInterval, countdownInterval;
     let countdown = 10;
     let currentEmail = null;
-    let pendingDeleteTimeout = null; // for undo
+    let pendingDeleteTimeout = null;
 
     async function apiCall(url, options = {}) {
         const res = await fetch(url, { ...options, headers: { 'Content-Type': 'application/json' } });
@@ -616,10 +776,10 @@
         if (unreadCount > 0) {
             badge.style.display = 'inline-block';
             badge.innerText = unreadCount;
-            document.title = `(${unreadCount}) TempMail`;
+            document.title = `(${unreadCount}) Mail Temple`;
         } else {
             badge.style.display = 'none';
-            document.title = 'TempMail · Professional Disposable Email';
+            document.title = 'Mail Temple · Disposable Email';
         }
 
         if (!messages.length) {
@@ -653,7 +813,6 @@
         html += '</div>';
         container.innerHTML = html;
 
-        // Attach events
         document.querySelectorAll('.delete-single').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
@@ -667,7 +826,6 @@
                 const id = el.closest('.email-item')?.dataset.id;
                 if (id) await openMessage(id);
             });
-            // keyboard
             el.addEventListener('keydown', async (e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
@@ -680,29 +838,23 @@
     }
 
     async function handleDeleteWithUndo(msgId) {
-        // Optimistic removal
         const item = document.querySelector(`.email-item[data-id="${msgId}"]`);
         if (item) item.style.opacity = '0.5';
-        // Show toast with undo button
         const toast = document.getElementById('toast');
         toast.innerHTML = `Message deleted <button class="undo-btn" id="undoDeleteBtn">Undo</button>`;
         toast.classList.add('show');
-        // Clear any previous timeout
         if (pendingDeleteTimeout) clearTimeout(pendingDeleteTimeout);
-        // Set timeout to actually delete
         pendingDeleteTimeout = setTimeout(async () => {
             await apiCall(`/api/delete/${msgId}`, { method: 'POST' });
             loadInbox();
             toast.classList.remove('show');
             pendingDeleteTimeout = null;
         }, 5000);
-
-        // Undo handler
         document.getElementById('undoDeleteBtn').addEventListener('click', () => {
             if (pendingDeleteTimeout) clearTimeout(pendingDeleteTimeout);
             pendingDeleteTimeout = null;
             toast.classList.remove('show');
-            loadInbox(); // refresh to restore the message (not yet deleted)
+            loadInbox();
         });
     }
 
@@ -721,9 +873,7 @@
             }
             const modal = document.getElementById('messageModal');
             modal.style.display = 'flex';
-            // Focus trap: focus the close button
             document.getElementById('closeModalBtn').focus();
-            // Attach delete inside modal
             const delBtn = document.getElementById('modalDeleteBtn');
             const newDel = delBtn.cloneNode(true);
             delBtn.parentNode.replaceChild(newDel, delBtn);
@@ -754,7 +904,6 @@
         }
     });
 
-    // Custom confirm dialog
     function customConfirm(message) {
         return new Promise((resolve) => {
             const dialog = document.getElementById('confirmDialog');
@@ -771,7 +920,6 @@
         });
     }
 
-    // --- NEW: Silent address creation (no confirm) ---
     async function createSilentAddress() {
         try {
             const data = await apiCall('/api/new', { method: 'POST' });
@@ -784,7 +932,6 @@
         }
     }
 
-    // --- Modified: with confirm for user-triggered new address ---
     async function newAddress() {
         const confirmed = await customConfirm('Generate a new email address? Current inbox will be erased permanently.');
         if (!confirmed) return;
@@ -807,7 +954,6 @@
                 document.getElementById('currentEmail').innerText = currentEmail;
                 loadInbox();
             } else {
-                // Silent creation on first load – no popup
                 await createSilentAddress();
             }
         } catch (err) {
@@ -822,7 +968,7 @@
             const btn = document.getElementById('copyAddressBtn');
             const icon = btn.querySelector('i');
             icon.className = 'fas fa-check';
-            btn.style.color = 'var(--success)';
+            btn.style.color = 'var(--neon-cyan)';
             showSimpleToast('📋 Email copied');
             setTimeout(() => {
                 icon.className = 'far fa-copy';
