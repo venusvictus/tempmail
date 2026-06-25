@@ -636,8 +636,8 @@
             <span class="logo-text">MAIL TEMPLE</span>
         </div>
         <div class="header-actions">
-            <!-- Account icon linking to /auth (you can change the href later) -->
-            <a href="/auth" aria-label="Account" title="Account">
+            <!-- ✅ Conditional account link -->
+            <a href="{{ url_for('account') if is_logged_in else url_for('auth') }}" aria-label="Account" title="Account">
                 <i class="fas fa-user-circle"></i>
             </a>
             <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode" aria-label="Toggle theme">
