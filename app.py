@@ -541,8 +541,16 @@ def health():
     return jsonify({"status": "ok"})
 
 # ---------------------------------------------------
-# Lemon Squeezy Payment Routes
+# Lemon Squeezy Payment Routes (multi‑plan)
 # ---------------------------------------------------
+
+# Mapping from plan keys to variant IDs – replace with your real variant IDs
+PLAN_VARIANT_MAP = {
+    'weekly': os.getenv("LS_WEEKLY_VARIANT_ID", "YOUR_WEEKLY_VARIANT_ID"),
+    'monthly': os.getenv("LS_MONTHLY_VARIANT_ID", "YOUR_MONTHLY_VARIANT_ID"),
+    'lifetime': os.getenv("LS_LIFETIME_VARIANT_ID", "YOUR_LIFETIME_VARIANT_ID"),
+}
+
 @app.route("/create-checkout")
 def create_checkout():
     if 'user' not in session:
@@ -550,9 +558,11 @@ def create_checkout():
     user_email = session['user']['email']
     user_id = session['user']['id']
 
-    price_id = os.getenv("PREMIUM_PRICE_ID")
-    if not price_id:
-        return "Payment configuration missing", 500
+    # Which plan is the user buying?
+    plan = request.args.get('plan', 'monthly')  # default to monthly if not specified
+    variant_id = PLAN_VARIANT_MAP.get(plan)
+    if not variant_id:
+        return "Invalid plan selected", 400
 
     checkout_url = "https://api.lemonsqueezy.com/v1/checkouts"
     payload = {
@@ -560,7 +570,7 @@ def create_checkout():
             "type": "checkouts",
             "attributes": {
                 "product_options": {
-                    "enabled_variants": [int(price_id)],
+                    "enabled_variants": [int(variant_id)],
                     "redirect_url": url_for('checkout_success', _external=True),
                     "receipt_button_text": "Go to Dashboard",
                     "receipt_thank_you_note": "Thank you for upgrading to Premium!"
@@ -583,7 +593,7 @@ def create_checkout():
                 "variant": {
                     "data": {
                         "type": "variants",
-                        "id": price_id
+                        "id": variant_id
                     }
                 }
             }
@@ -658,7 +668,7 @@ def lemon_webhook():
     return "OK", 200
 
 # ---------------------------------------------------
-# Email API routes (updated status endpoint)
+# Email API routes (unchanged except status already updated)
 # ---------------------------------------------------
 @app.route("/api/status", methods=["GET"])
 @token_required
@@ -666,7 +676,7 @@ def status():
     return jsonify({
         "email": g.inbox_address,
         "token": g.inbox_token,
-        "premium": g.is_premium   # 👈 now returns premium flag
+        "premium": g.is_premium   # still here but mobile app ignores it
     })
 
 @app.route("/api/new", methods=["POST"])
