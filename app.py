@@ -194,17 +194,16 @@ def token_required(f):
         try:
             cur = conn.cursor()
             cur.execute(
-                "SELECT address, premium, is_banned FROM inboxes WHERE token = %s AND created_at > NOW() - INTERVAL '1 day'",
+                "SELECT address, is_banned FROM inboxes WHERE token = %s AND created_at > NOW() - INTERVAL '1 day'",
                 (token,)
             )
             row = cur.fetchone()
             if not row:
                 return jsonify({"error": "Invalid or expired token"}), 401
-            if row[2]:
+            if row[1]:
                 return jsonify({"error": "Inbox banned"}), 403
             g.inbox_token = token
             g.inbox_address = row[0]
-            g.is_premium = row[1]   # 👈 new: store premium flag
         finally:
             put_db_connection(conn)
         return f(*args, **kwargs)
@@ -267,7 +266,7 @@ def create_inbox(ip_address=None, captcha_token=None):
     try:
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO inboxes (token, address, domain, ip_address, premium, created_at) VALUES (%s, %s, %s, %s, FALSE, NOW())",
+            "INSERT INTO inboxes (token, address, domain, ip_address, created_at) VALUES (%s, %s, %s, %s, NOW())",
             (token, address, domain, ip_address)
         )
         conn.commit()
@@ -282,19 +281,6 @@ def get_inbox_email(token):
         cur.execute("SELECT address FROM inboxes WHERE token = %s AND is_banned = FALSE", (token,))
         row = cur.fetchone()
         return row[0] if row else None
-    finally:
-        put_db_connection(conn)
-
-def set_inbox_premium_by_token(token, is_premium=True, expires_at=None):
-    """Set premium status for an inbox."""
-    conn = get_db_connection()
-    try:
-        cur = conn.cursor()
-        cur.execute(
-            "UPDATE inboxes SET premium = %s, premium_expires_at = %s WHERE token = %s",
-            (is_premium, expires_at, token)
-        )
-        conn.commit()
     finally:
         put_db_connection(conn)
 
@@ -544,11 +530,11 @@ def health():
 # Lemon Squeezy Payment Routes (multi‑plan)
 # ---------------------------------------------------
 
-# Mapping from plan keys to variant IDs – replace with your real variant IDs
+# Mapping from plan keys to variant IDs – set via environment variables
 PLAN_VARIANT_MAP = {
-    'weekly': os.getenv("LS_WEEKLY_VARIANT_ID", "YOUR_WEEKLY_VARIANT_ID"),
-    'monthly': os.getenv("LS_MONTHLY_VARIANT_ID", "YOUR_MONTHLY_VARIANT_ID"),
-    'lifetime': os.getenv("LS_LIFETIME_VARIANT_ID", "YOUR_LIFETIME_VARIANT_ID"),
+    'weekly': os.getenv("LS_WEEKLY_VARIANT_ID"),
+    'monthly': os.getenv("LS_MONTHLY_VARIANT_ID"),
+    'lifetime': os.getenv("LS_LIFETIME_VARIANT_ID"),
 }
 
 @app.route("/create-checkout")
@@ -558,8 +544,7 @@ def create_checkout():
     user_email = session['user']['email']
     user_id = session['user']['id']
 
-    # Which plan is the user buying?
-    plan = request.args.get('plan', 'monthly')  # default to monthly if not specified
+    plan = request.args.get('plan', 'monthly')
     variant_id = PLAN_VARIANT_MAP.get(plan)
     if not variant_id:
         return "Invalid plan selected", 400
@@ -625,7 +610,6 @@ def checkout_success():
 
 @app.route("/webhook/lemon", methods=["POST"])
 def lemon_webhook():
-    # Verify signature
     secret = os.getenv("LEMONSQUEEZY_WEBHOOK_SECRET")
     signature = request.headers.get("X-Signature")
     if secret and signature:
@@ -641,42 +625,28 @@ def lemon_webhook():
     event_name = data.get('meta', {}).get('event_name')
 
     if event_name == 'order_created':
-        # Extract custom data – first look in the new checkout format
         attributes = data['data']['attributes']
         first_item = attributes.get('first_order_item', {})
         product_options = first_item.get('product_options', {})
         custom = product_options.get('custom', {})
-        inbox_token = custom.get('inbox_token')
+        user_email = custom.get('user_email') or attributes.get('user_email')
 
-        if inbox_token:
-            # Grant premium to this inbox (30 days by default)
-            expires = datetime.now() + timedelta(days=30)
-            set_inbox_premium_by_token(inbox_token, True, expires)
-            print(f"✅ Premium activated for inbox token: {inbox_token}")
-        else:
-            # fallback: user_email (from web checkout)
-            user_email = custom.get('user_email') or attributes.get('user_email')
-            if user_email:
-                expires = datetime.now() + timedelta(days=30)
-                set_user_premium(user_email, True, expires)
-                print(f"✅ Premium activated for user: {user_email}")
-
-    elif event_name == 'subscription_updated':
-        # Handle updates/cancellations if needed
-        pass
+        if user_email:
+            expires = datetime.now() + timedelta(days=30)  # default 30 days
+            set_user_premium(user_email, True, expires)
+            print(f"✅ Premium activated for user: {user_email}")
 
     return "OK", 200
 
 # ---------------------------------------------------
-# Email API routes (unchanged except status already updated)
+# Email API routes (unchanged, no premium field)
 # ---------------------------------------------------
 @app.route("/api/status", methods=["GET"])
 @token_required
 def status():
     return jsonify({
         "email": g.inbox_address,
-        "token": g.inbox_token,
-        "premium": g.is_premium   # still here but mobile app ignores it
+        "token": g.inbox_token
     })
 
 @app.route("/api/new", methods=["POST"])
