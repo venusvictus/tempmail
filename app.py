@@ -152,7 +152,6 @@ def get_or_create_user(email):
                 'premium_expires_at': row[3]
             }
         else:
-            # Create new user
             cur.execute(
                 "INSERT INTO users (email) VALUES (%s) RETURNING id, email, is_premium, premium_expires_at",
                 (email,)
@@ -195,16 +194,17 @@ def token_required(f):
         try:
             cur = conn.cursor()
             cur.execute(
-                "SELECT address, is_banned FROM inboxes WHERE token = %s AND created_at > NOW() - INTERVAL '1 day'",
+                "SELECT address, premium, is_banned FROM inboxes WHERE token = %s AND created_at > NOW() - INTERVAL '1 day'",
                 (token,)
             )
             row = cur.fetchone()
             if not row:
                 return jsonify({"error": "Invalid or expired token"}), 401
-            if row[1]:
+            if row[2]:
                 return jsonify({"error": "Inbox banned"}), 403
             g.inbox_token = token
             g.inbox_address = row[0]
+            g.is_premium = row[1]   # 👈 new: store premium flag
         finally:
             put_db_connection(conn)
         return f(*args, **kwargs)
@@ -256,7 +256,7 @@ def notify_inbox(inbox_token, event_data):
             pass
 
 # ---------------------------------------------------
-# Inbox management helpers (unchanged)
+# Inbox management helpers
 # ---------------------------------------------------
 def create_inbox(ip_address=None, captcha_token=None):
     domain = random.choice(DOMAINS)
@@ -267,7 +267,7 @@ def create_inbox(ip_address=None, captcha_token=None):
     try:
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO inboxes (token, address, domain, ip_address, created_at) VALUES (%s, %s, %s, %s, NOW())",
+            "INSERT INTO inboxes (token, address, domain, ip_address, premium, created_at) VALUES (%s, %s, %s, %s, FALSE, NOW())",
             (token, address, domain, ip_address)
         )
         conn.commit()
@@ -282,6 +282,19 @@ def get_inbox_email(token):
         cur.execute("SELECT address FROM inboxes WHERE token = %s AND is_banned = FALSE", (token,))
         row = cur.fetchone()
         return row[0] if row else None
+    finally:
+        put_db_connection(conn)
+
+def set_inbox_premium_by_token(token, is_premium=True, expires_at=None):
+    """Set premium status for an inbox."""
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE inboxes SET premium = %s, premium_expires_at = %s WHERE token = %s",
+            (is_premium, expires_at, token)
+        )
+        conn.commit()
     finally:
         put_db_connection(conn)
 
@@ -499,8 +512,6 @@ def auth():
         email = request.form.get("email")
         password = request.form.get("password")
         if email and password:
-            # Simple demo auth – in production, verify against your user DB
-            # For now, just ensure user exists in DB
             user = get_or_create_user(email)
             session['user'] = {'email': user['email'], 'id': user['id']}
             return redirect(url_for('index'))
@@ -522,7 +533,6 @@ def account():
         return redirect(url_for('auth'))
     user_email = session['user']['email']
     user_data = get_or_create_user(user_email)
-    # Update session with premium status
     session['user']['is_premium'] = user_data['is_premium']
     return render_template("account.html", user=session['user'])
 
@@ -621,37 +631,42 @@ def lemon_webhook():
     event_name = data.get('meta', {}).get('event_name')
 
     if event_name == 'order_created':
-        # Extract user email from custom data
+        # Extract custom data – first look in the new checkout format
         attributes = data['data']['attributes']
         first_item = attributes.get('first_order_item', {})
         product_options = first_item.get('product_options', {})
         custom = product_options.get('custom', {})
-        user_email = custom.get('user_email')
-        if not user_email:
-            # fallback
-            user_email = attributes.get('user_email')
+        inbox_token = custom.get('inbox_token')
 
-        if user_email:
-            # Grant premium for 30 days (or as per your plan)
-            expires_at = datetime.now() + timedelta(days=30)
-            set_user_premium(user_email, True, expires_at)
-            print(f"✅ Premium granted for {user_email}")
+        if inbox_token:
+            # Grant premium to this inbox (30 days by default)
+            expires = datetime.now() + timedelta(days=30)
+            set_inbox_premium_by_token(inbox_token, True, expires)
+            print(f"✅ Premium activated for inbox token: {inbox_token}")
+        else:
+            # fallback: user_email (from web checkout)
+            user_email = custom.get('user_email') or attributes.get('user_email')
+            if user_email:
+                expires = datetime.now() + timedelta(days=30)
+                set_user_premium(user_email, True, expires)
+                print(f"✅ Premium activated for user: {user_email}")
 
     elif event_name == 'subscription_updated':
-        # Handle cancellations, etc. (optional)
+        # Handle updates/cancellations if needed
         pass
 
     return "OK", 200
 
 # ---------------------------------------------------
-# Email API routes (unchanged)
+# Email API routes (updated status endpoint)
 # ---------------------------------------------------
 @app.route("/api/status", methods=["GET"])
 @token_required
 def status():
     return jsonify({
         "email": g.inbox_address,
-        "token": g.inbox_token
+        "token": g.inbox_token,
+        "premium": g.is_premium   # 👈 now returns premium flag
     })
 
 @app.route("/api/new", methods=["POST"])
