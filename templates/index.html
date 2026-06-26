@@ -199,6 +199,7 @@
             white-space: nowrap;
             outline: none;
             text-transform: uppercase;
+            text-decoration: none;  /* for links that look like buttons */
         }
         .btn:focus-visible {
             box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.5);
@@ -636,7 +637,6 @@
             <span class="logo-text">MAIL TEMPLE</span>
         </div>
         <div class="header-actions">
-            <!-- ✅ Conditional account link -->
             <a href="{{ url_for('account') if is_logged_in else url_for('auth') }}" aria-label="Account" title="Account">
                 <i class="fas fa-user-circle"></i>
             </a>
@@ -672,22 +672,21 @@
             </div>
         </div>
         <div id="inboxContainer">
-            <!-- Skeleton loaders -->
             <div class="skeleton"><div class="skeleton-dot"></div><div class="email-content" style="flex:1"><div class="skeleton-line medium"></div><div class="skeleton-line short" style="margin-top:8px;"></div><div class="skeleton-line long" style="margin-top:8px;"></div></div></div>
             <div class="skeleton"><div class="skeleton-dot"></div><div class="email-content" style="flex:1"><div class="skeleton-line medium"></div><div class="skeleton-line short" style="margin-top:8px;"></div><div class="skeleton-line long" style="margin-top:8px;"></div></div></div>
             <div class="skeleton"><div class="skeleton-dot"></div><div class="email-content" style="flex:1"><div class="skeleton-line medium"></div><div class="skeleton-line short" style="margin-top:8px;"></div><div class="skeleton-line long" style="margin-top:8px;"></div></div></div>
         </div>
     </div>
 
-    <!-- PREMIUM CARD (replaces Patreon) -->
+    <!-- PREMIUM CARD – now links to the actual checkout -->
     <div class="premium-card">
         <div class="text">
             <i class="fas fa-crown"></i>
             <span><strong>Go Premium</strong> – No ads · Unlimited inboxes · 30-day retention</span>
         </div>
-        <button class="btn btn-premium" id="upgradePremiumBtn">
+        <a href="/create-checkout?plan=monthly" class="btn btn-premium" id="upgradePremiumBtn">
             <i class="fas fa-star"></i> Upgrade to Premium
-        </button>
+        </a>
     </div>
 </div>
 
@@ -749,7 +748,6 @@
         });
     })();
 
-    // ── All JavaScript functions remain exactly the same ──
     let autoRefreshInterval, countdownInterval;
     let countdown = 10;
     let currentEmail = null;
@@ -1019,10 +1017,7 @@
         document.getElementById('deleteAllBtn').addEventListener('click', deleteAll);
         document.getElementById('copyAddressBtn').addEventListener('click', copyAddress);
         document.getElementById('manualRefreshBtn').addEventListener('click', () => { loadInbox(); resetCountdown(); showSimpleToast('Refreshing…'); });
-        // Premium button – for now, just a toast (you can link to a premium page later)
-        document.getElementById('upgradePremiumBtn').addEventListener('click', () => {
-            showSimpleToast('⭐ Upgrade page coming soon!');
-        });
+        // Premium button now works natively as a link, no extra code needed
     });
 
     function escapeHtml(str) {
