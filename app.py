@@ -51,21 +51,22 @@ app.config.update(SECRET_KEY=os.getenv("SECRET_KEY", "supersecretkey"))
 app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key")
 
 # ---------------------------------------------------
-# Security headers (Talisman)
+# Security headers (Talisman) – adjusted for Turnstile
 # ---------------------------------------------------
 csp = {
     'default-src': ["'self'"],
     'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
     'font-src': ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
     'img-src': ["'self'", 'data:', 'https://cdn.openai.com'],
-    'script-src': ["'self'", "'unsafe-inline'"],
+    'script-src': ["'self'", "'unsafe-inline'", 'https://challenges.cloudflare.com'],
+    'frame-src': ["'self'", 'https://challenges.cloudflare.com'],
 }
 Talisman(
     app,
     force_https=os.getenv("FORCE_HTTPS", "True").lower() == "true",
     session_cookie_secure=True,
     session_cookie_http_only=True,
-    frame_options='SAMEORIGIN',
+    frame_options=None,                              # Let CSP handle iframes
     content_security_policy=csp,
     referrer_policy='strict-origin-when-cross-origin'
 )
@@ -181,6 +182,23 @@ def set_user_premium(email, is_premium=True, expires_at=None):
         put_db_connection(conn)
 
 # ---------------------------------------------------
+# Turnstile verification helper
+# ---------------------------------------------------
+def verify_turnstile(token):
+    secret = os.getenv("TURNSTILE_SECRET_KEY")
+    if not secret or not token:
+        return False
+    try:
+        resp = requests.post('https://challenges.cloudflare.com/turnstile/v0/siteverify', data={
+            'secret': secret,
+            'response': token
+        }, timeout=5)
+        return resp.json().get('success', False)
+    except Exception as e:
+        print(f"Turnstile verification error: {e}")
+        return False
+
+# ---------------------------------------------------
 # Token authentication decorator (for email API)
 # ---------------------------------------------------
 def token_required(f):
@@ -258,6 +276,10 @@ def notify_inbox(inbox_token, event_data):
 # Inbox management helpers
 # ---------------------------------------------------
 def create_inbox(ip_address=None, captcha_token=None):
+    # If a Turnstile token is provided, verify it
+    if captcha_token and not verify_turnstile(captcha_token):
+        raise Exception("CAPTCHA verification failed")
+
     domain = random.choice(DOMAINS)
     local_part = secrets.token_urlsafe(8)
     address = f"{local_part}@{domain}"
@@ -485,7 +507,7 @@ def webhook():
     return "OK", 200
 
 # ---------------------------------------------------
-# Frontend routes (session-based auth)
+# Frontend routes (session-based auth) – with Turnstile
 # ---------------------------------------------------
 @app.route("/")
 def index():
@@ -493,8 +515,17 @@ def index():
     return render_template("index.html", is_logged_in=is_logged_in)
 
 @app.route("/auth", methods=["GET", "POST"])
+@limiter.limit("5 per minute")   # tightened for auth
 def auth():
+    site_key = os.getenv("TURNSTILE_SITE_KEY", "")
     if request.method == "POST":
+        # 1. Verify Turnstile token
+        turnstile_token = request.form.get('cf-turnstile-response')
+        if not verify_turnstile(turnstile_token):
+            return render_template("auth.html",
+                                   error="Please complete the CAPTCHA.",
+                                   turnstile_site_key=site_key)
+        # 2. Process login/signup
         email = request.form.get("email")
         password = request.form.get("password")
         if email and password:
@@ -502,11 +533,13 @@ def auth():
             session['user'] = {'email': user['email'], 'id': user['id']}
             return redirect(url_for('index'))
         else:
-            return render_template("auth.html", error="Please fill in all fields")
+            return render_template("auth.html",
+                                   error="Please fill in all fields",
+                                   turnstile_site_key=site_key)
     else:
         if 'user' in session:
             return redirect(url_for('account'))
-        return render_template("auth.html")
+        return render_template("auth.html", turnstile_site_key=site_key)
 
 @app.route("/logout")
 def logout():
@@ -654,7 +687,7 @@ def status():
 def new_address():
     ip = request.remote_addr
     data = request.get_json(silent=True) or {}
-    captcha_token = data.get("captcha_token")
+    captcha_token = data.get("captcha_token")     # optional Turnstile token
     try:
         token, address = create_inbox(ip, captcha_token)
         return jsonify({
